@@ -1,0 +1,2696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全球地缘政治冲突风险监测</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root {
+    --bg-primary: #f8f9fb;
+    --bg-secondary: #ffffff;
+    --bg-card: #ffffff;
+    --border: #e2e8f0;
+    --text-primary: #1a202c;
+    --text-secondary: #4a5568;
+    --text-muted: #a0aec0;
+    --critical: #dc2626;
+    --critical-glow: rgba(220,38,38,0.15);
+    --high: #d97706;
+    --high-glow: rgba(217,119,6,0.15);
+    --medium: #2563eb;
+    --medium-glow: rgba(37,99,235,0.15);
+    --accent: #0891b2;
+    --accent-glow: rgba(8,145,178,0.1);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    height: 56px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    position: relative;
+    z-index: 1000;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    overflow: hidden;
+    gap: 12px;
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  .header-left .icon {
+    width: 32px; height: 32px;
+    background: radial-gradient(circle, var(--critical) 30%, transparent 70%);
+    border-radius: 50%;
+    animation: pulse-dot 2s ease-in-out infinite;
+    position: relative;
+  }
+  .header-left .icon::after {
+    content:''; position: absolute; inset: 4px;
+    background: var(--bg-secondary);
+    border-radius: 50%;
+  }
+  .header-left .icon::before {
+    content:''; position: absolute; inset: 8px;
+    background: var(--critical);
+    border-radius: 50%;
+    z-index: 1;
+  }
+  @keyframes pulse-dot {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+  }
+  .header-left h1 {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  /* View Toggle */
+  .view-toggle {
+    display: flex;
+    gap: 3px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3px;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .view-toggle::-webkit-scrollbar { display: none; }
+  .view-btn {
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .view-btn:hover { color: var(--text-primary); }
+  .view-btn.active {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    flex-shrink: 0;
+  }
+  .header-meta .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(220,38,38,0.06);
+    border: 1px solid rgba(220,38,38,0.2);
+    padding: 3px 10px;
+    border-radius: 12px;
+    color: var(--critical);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .live-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--critical);
+    border-radius: 50%;
+    animation: blink 1.5s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  .lang-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg-primary);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+  .lang-toggle:hover {
+    background: #edf2f7;
+    color: var(--text-primary);
+  }
+  .lang-icon {
+    font-size: 14px;
+  }
+
+  /* Main Layout */
+  .main { display: flex; height: calc(100vh - 56px); }
+
+  /* Sidebar */
+  .sidebar {
+    width: 380px;
+    min-width: 380px;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+  }
+  .sidebar-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .stats-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .stat-chip {
+    flex: 1;
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 8px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+  }
+  .stat-chip .num {
+    font-size: 20px;
+    font-weight: 900;
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  }
+  .stat-chip .label {
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .stat-chip.critical .num { color: var(--critical); }
+  .stat-chip.high .num { color: var(--high); }
+  .stat-chip.medium .num { color: var(--medium); }
+  .stat-chip.total .num { color: var(--accent); }
+
+  .filter-tabs {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .filter-tab {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .filter-tab:hover { border-color: #94a3b8; color: var(--text-primary); }
+  .filter-tab.active {
+    background: var(--text-primary);
+    border-color: var(--text-primary);
+    color: white;
+  }
+
+  /* Conflict List */
+  .conflict-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 12px;
+  }
+  .conflict-list::-webkit-scrollbar { width: 4px; }
+  .conflict-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+  .conflict-item {
+    padding: 14px 16px;
+    margin-bottom: 6px;
+    border-radius: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .conflict-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    border-radius: 3px 0 0 3px;
+  }
+  .conflict-item.risk-CRITICAL::before { background: var(--critical); }
+  .conflict-item.risk-HIGH::before { background: var(--high); }
+  .conflict-item.risk-MEDIUM::before { background: var(--medium); }
+
+  .conflict-item:hover {
+    border-color: var(--accent);
+    transform: translateX(4px);
+    background: #f0f7fa;
+  }
+  .conflict-item.active {
+    border-color: var(--accent);
+    background: #f0f7fa;
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+
+  .conflict-item .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .conflict-item .name {
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .risk-badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  }
+  .risk-badge.CRITICAL { background: rgba(220,38,38,0.08); color: var(--critical); border: 1px solid rgba(220,38,38,0.2); }
+  .risk-badge.HIGH { background: rgba(217,119,6,0.08); color: var(--high); border: 1px solid rgba(217,119,6,0.2); }
+  .risk-badge.MEDIUM { background: rgba(37,99,235,0.08); color: var(--medium); border: 1px solid rgba(37,99,235,0.2); }
+
+  .conflict-item .region-tag {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+  .conflict-item .status-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Iran event cards */
+  .iran-event-card {
+    padding: 12px 14px; margin-bottom: 6px;
+    border-radius: 8px; background: var(--bg-primary);
+    border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .iran-event-card:hover { border-color: #94a3b8; box-shadow: 0 1px 4px rgba(0,0,0,0.06); transform: translateY(-1px); }
+  .iran-event-card.active { border-color: var(--medium); box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+  .iran-event-card .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .iran-event-card .loc { font-size: 13px; font-weight: 700; }
+  .iran-event-card .date { font-size: 10px; color: var(--text-muted); font-family: 'SF Mono','Menlo',monospace; }
+  .type-tag {
+    display: inline-block; font-size: 10px; font-weight: 600; padding: 1px 7px;
+    border-radius: 4px; margin-bottom: 4px;
+  }
+  .type-tag.airstrike { background: #eff6ff; color: #2563eb; }
+  .type-tag.missile { background: #fef2f2; color: #dc2626; }
+  .type-tag.nuclear { background: #ecfdf5; color: #059669; }
+  .type-tag.civilian { background: #fff7ed; color: #ea580c; }
+  .iran-event-card .desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+  .iran-event-card .casualties { font-size: 11px; color: var(--critical); font-weight: 600; margin-top: 4px; }
+
+  /* Map */
+  .map-container {
+    flex: 1;
+    position: relative;
+  }
+  #map {
+    width: 100%;
+    height: 100%;
+    background: var(--bg-primary);
+  }
+  .leaflet-tile-pane { filter: none; }
+  .leaflet-container { background: #f8f9fb !important; }
+  .leaflet-control-zoom a {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border) !important;
+  }
+
+  /* Detail Panel */
+  .detail-panel {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    width: 400px;
+    max-height: calc(100% - 32px);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    z-index: 800;
+    display: none;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    backdrop-filter: blur(12px);
+  }
+  .detail-panel.show { display: block; animation: slideIn 0.3s ease; }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .detail-close {
+    position: absolute;
+    right: 12px; top: 12px;
+    width: 28px; height: 28px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s;
+  }
+  .detail-close:hover { color: var(--text-primary); border-color: #94a3b8; }
+  .detail-content { padding: 20px; }
+  .detail-content h2 { font-size: 18px; font-weight: 900; margin-bottom: 4px; padding-right: 36px; }
+  .detail-content .meta-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin: 8px 0 16px;
+    flex-wrap: wrap;
+  }
+  .detail-content .meta-tag {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+  .detail-content .parties {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .detail-content .parties .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .detail-content .parties .names {
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.6;
+  }
+  .detail-content .status-full {
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+  }
+  .detail-content .sources-section .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .source-link {
+    display: block;
+    padding: 8px 12px;
+    margin-bottom: 4px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 12px;
+    transition: all 0.2s;
+  }
+  .source-link:hover {
+    border-color: var(--accent);
+    background: rgba(8,145,178,0.05);
+  }
+
+  /* OSINT Panel */
+  .osint-toggle {
+    position: absolute;
+    left: 16px;
+    bottom: 16px;
+    z-index: 800;
+    padding: 8px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--accent);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .osint-toggle:hover { border-color: var(--accent); box-shadow: 0 2px 8px rgba(8,145,178,0.12); }
+
+  .osint-panel {
+    position: absolute;
+    left: 16px;
+    bottom: 52px;
+    width: 360px;
+    max-height: 400px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    z-index: 800;
+    display: none;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    padding: 16px;
+  }
+  .osint-panel.show { display: block; animation: slideUp 0.3s ease; }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .osint-panel::-webkit-scrollbar { width: 4px; }
+  .osint-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  .osint-category { margin-bottom: 16px; }
+  .osint-category h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .osint-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+  }
+  .osint-item a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .osint-item a:hover { text-decoration: underline; }
+  .osint-item .desc {
+    font-size: 10px;
+    color: var(--text-muted);
+    max-width: 200px;
+    text-align: right;
+  }
+
+  /* Custom markers */
+  .conflict-marker {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    position: relative;
+    cursor: pointer;
+  }
+  .conflict-marker::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    animation: radar 2s ease-out infinite;
+  }
+  .conflict-marker.critical { background: var(--critical); box-shadow: 0 0 12px var(--critical-glow); }
+  .conflict-marker.critical::after { border: 2px solid var(--critical); }
+  .conflict-marker.high { background: var(--high); box-shadow: 0 0 12px var(--high-glow); }
+  .conflict-marker.high::after { border: 2px solid var(--high); }
+  .conflict-marker.medium { background: var(--medium); box-shadow: 0 0 12px var(--medium-glow); }
+  .conflict-marker.medium::after { border: 2px solid var(--medium); }
+  @keyframes radar {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(2.5); opacity: 0; }
+  }
+
+  /* Iran legend */
+  .iran-legend {
+    position: absolute; left: 16px; bottom: 16px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; z-index: 800;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06); font-size: 11px;
+    display: none;
+  }
+  .iran-legend .l-title { font-weight: 700; margin-bottom: 6px; font-size: 12px; }
+  .iran-legend .l-item { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; color: var(--text-secondary); }
+  .l-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .leaflet-popup-content-wrapper {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12) !important;
+  }
+  .leaflet-popup-tip { background: var(--bg-card) !important; }
+  .leaflet-popup-content { margin: 10px 14px !important; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif !important; }
+
+  .hidden { display: none !important; }
+  #global-sidebar, #ukraine-sidebar, #iran-sidebar,
+  #gaza-sidebar, #sudan-sidebar, #yemen-sidebar,
+  #myanmar-sidebar, #syria-sidebar, #drc-sidebar {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+  #global-sidebar.hidden, #ukraine-sidebar.hidden, #iran-sidebar.hidden, #gaza-sidebar.hidden, #sudan-sidebar.hidden, #yemen-sidebar.hidden, #myanmar-sidebar.hidden, #syria-sidebar.hidden, #drc-sidebar.hidden {
+    display: none !important;
+  }
+
+  /* SIDEBAR COLLAPSE/EXPAND TOGGLE */
+  .sidebar {
+    position: relative;
+    transition: width 0.3s ease, min-width 0.3s ease;
+  }
+  .sidebar.collapsed {
+    width: 40px !important;
+    min-width: 40px !important;
+  }
+  .sidebar.collapsed > *:not(.sidebar-toggle) {
+    display: none;
+  }
+  .sidebar-toggle {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 10;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+  .sidebar-toggle:hover {
+    background: #edf2f7;
+    color: var(--text-primary);
+  }
+  .sidebar.collapsed .sidebar-toggle {
+    position: static;
+    margin: 6px auto;
+  }
+
+  /* RIGHT ANALYSIS PANEL */
+  .analysis-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 420px;
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border);
+    box-shadow: -4px 0 20px rgba(0,0,0,0.08);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+  }
+  .analysis-panel.show {
+    transform: translateX(0);
+  }
+
+  .analysis-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .analysis-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .analysis-subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .analysis-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .analysis-close:hover {
+    color: var(--text-primary);
+  }
+
+  .analysis-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    min-height: 0;
+  }
+  .analysis-content::-webkit-scrollbar {
+    width: 4px;
+  }
+  .analysis-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+
+  .report-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    transition: all 0.2s;
+  }
+  .report-card:hover {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border-color: var(--accent);
+  }
+  .report-source {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .report-source .org-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(8,145,178,0.08);
+    font-size: 10px;
+  }
+  .report-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  .report-date {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .report-insight {
+    font-size: 12.5px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+  }
+  .report-insight .key-point {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  .report-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: rgba(8,145,178,0.06);
+    transition: all 0.2s;
+  }
+  .report-link:hover {
+    background: rgba(8,145,178,0.12);
+  }
+
+  .analyst-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .analyst-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+  .analyst-affiliation {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .analyst-quote {
+    font-size: 12.5px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+
+  .analysis-section {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 16px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .analysis-section:first-child {
+    margin-top: 0;
+  }
+
+  .analysis-toggle {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    z-index: 999;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    padding: 10px 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    box-shadow: -2px 0 8px rgba(0,0,0,0.06);
+    transition: all 0.2s;
+  }
+  .analysis-toggle:hover {
+    background: #edf2f7;
+    box-shadow: -2px 0 12px rgba(0,0,0,0.1);
+  }
+  .toggle-label {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  .analysis-panel.show ~ .analysis-toggle {
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="icon"></div>
+    <h1>全球地缘政治冲突风险监测</h1>
+  </div>
+  <div class="view-toggle">
+    <button class="view-btn active" onclick="switchView('global')">全球概览</button>
+    <button class="view-btn" onclick="switchView('ukraine')">俄乌战区</button>
+    <button class="view-btn" onclick="switchView('iran')">伊朗战区</button>
+    <button class="view-btn" onclick="switchView('gaza')">加沙战区</button>
+    <button class="view-btn" onclick="switchView('sudan')">苏丹战区</button>
+    <button class="view-btn" onclick="switchView('yemen')">也门战区</button>
+    <button class="view-btn" onclick="switchView('myanmar')">缅甸战区</button>
+    <button class="view-btn" onclick="switchView('syria')">叙利亚战区</button>
+    <button class="view-btn" onclick="switchView('drc')">刚果战区</button>
+  </div>
+  <div class="header-meta">
+    <button class="lang-toggle" onclick="toggleLang()" id="lang-toggle" title="Switch Language">
+      <span class="lang-icon">🌐</span>
+      <span id="lang-label">EN</span>
+    </button>
+    <div class="live-badge">MONITORING</div>
+    <span id="update-time"></span>
+  </div>
+</div>
+
+<div class="main">
+  <div class="sidebar">
+    <button class="sidebar-toggle" onclick="toggleSidebar()" title="收起/展开面板">◀</button>
+    <!-- GLOBAL VIEW SIDEBAR -->
+    <div id="global-sidebar">
+      <div class="sidebar-header">
+        <div class="stats-row">
+          <div class="stat-chip total"><div class="num" id="total-count">0</div><div class="label">全部冲突</div></div>
+          <div class="stat-chip critical"><div class="num" id="critical-count">0</div><div class="label">极危</div></div>
+          <div class="stat-chip high"><div class="num" id="high-count">0</div><div class="label">高危</div></div>
+          <div class="stat-chip medium"><div class="num" id="medium-count">0</div><div class="label">中危</div></div>
+        </div>
+        <div class="filter-tabs" id="global-filters">
+          <div class="filter-tab active" data-filter="ALL">全部</div>
+          <div class="filter-tab" data-filter="CRITICAL">极危</div>
+          <div class="filter-tab" data-filter="HIGH">高危</div>
+          <div class="filter-tab" data-filter="MEDIUM">中危</div>
+        </div>
+      </div>
+      <div class="conflict-list" id="conflict-list"></div>
+    </div>
+
+    <!-- UKRAINE VIEW SIDEBAR -->
+    <div id="ukraine-sidebar" class="hidden">
+      <div class="sidebar-header">
+        <div class="stats-row">
+          <div class="stat-chip"><div class="num" style="color:#dc2626" id="n-ru-strike">0</div><div class="label">俄军打击</div></div>
+          <div class="stat-chip"><div class="num" style="color:#2563eb" id="n-ua-strike">0</div><div class="label">乌军反击</div></div>
+          <div class="stat-chip"><div class="num" style="color:#d97706" id="n-ground">0</div><div class="label">地面战斗</div></div>
+          <div class="stat-chip"><div class="num" style="color:#059669" id="n-ua-gain">0</div><div class="label">领土收复</div></div>
+        </div>
+        <div class="filter-tabs" id="ukraine-filters">
+          <div class="filter-tab active" data-filter="ALL">全部事件</div>
+          <div class="filter-tab" data-filter="ru_strike">俄军打击</div>
+          <div class="filter-tab" data-filter="ua_strike">乌军反击</div>
+          <div class="filter-tab" data-filter="ground">地面战斗</div>
+          <div class="filter-tab" data-filter="territory">领土变动</div>
+        </div>
+      </div>
+      <div class="conflict-list" id="ukraine-event-list"></div>
+    </div>
+
+    <!-- IRAN VIEW SIDEBAR -->
+    <div id="iran-sidebar" class="hidden">
+      <div class="sidebar-header">
+        <div class="stats-row">
+          <div class="stat-chip" style="--c:#2563eb"><div class="num" style="color:#2563eb" id="n-us">0</div><div class="label">美国打击</div></div>
+          <div class="stat-chip" style="--c:#7c3aed"><div class="num" style="color:#7c3aed" id="n-il">0</div><div class="label">以色列打击</div></div>
+          <div class="stat-chip" style="--c:#dc2626"><div class="num" style="color:#dc2626" id="n-ir">0</div><div class="label">伊朗反击</div></div>
+          <div class="stat-chip" style="--c:#ea580c"><div class="num" style="color:#ea580c" id="n-cas">0</div><div class="label">死亡人数</div></div>
+        </div>
+        <div class="filter-tabs" id="iran-filters">
+          <div class="filter-tab active" data-filter="ALL">全部事件</div>
+          <div class="filter-tab" data-filter="airstrike">空袭</div>
+          <div class="filter-tab" data-filter="missile">导弹</div>
+          <div class="filter-tab" data-filter="nuclear">核设施</div>
+          <div class="filter-tab" data-filter="civilian">平民伤亡</div>
+        </div>
+      </div>
+      <div class="conflict-list" id="iran-event-list"></div>
+    </div>
+
+    <!-- GAZA VIEW SIDEBAR -->
+    <div id="gaza-sidebar" class="hidden">
+      <div class="sidebar-header">
+        <div class="stats-row">
+          <div class="stat-chip" style="--c:#dc2626"><div class="num" style="color:#dc2626" id="n-airstrike-gz">0</div><div class="label">空袭</div></div>
+          <div class="stat-chip" style="--c:#d97706"><div class="num" style="color:#d97706" id="n-ground-op-gz">0</div><div class="label">地面行动</div></div>
+          <div class="stat-chip" style="--c:#2563eb"><div class="num" style="color:#2563eb" id="n-ceasefire-gz">0</div><div class="label">停火谈判</div></div>
+          <div class="stat-chip" style="--c:#059669"><div class="num" style="color:#059669" id="n-humanitarian-gz">0</div><div class="label">人道危机</div></div>
+        </div>
+        <div class="filter-tabs" id="gaza-filters">
+          <div class="filter-tab active" data-filter="ALL">全部事件</div>
+          <div class="filter-tab" data-filter="airstrike">空袭</div>
+          <div class="filter-tab" data-filter="ground_op">地面行动</div>
+          <div class="filter-tab" data-filter="ceasefire">停火/谈判</div>
+          <div class="filter-tab" data-filter="humanitarian">人道危机</div>
+          <div class="filter-tab" data-filter="escalation">区域升级</div>
+        </div>
+      </div>
+      <div class="conflict-list" id="gaza-event-list"></div>
+    </div>
+
+    <!-- SUDAN VIEW SIDEBAR -->
+    <div id="sudan-sidebar" class="hidden">
+      <div class="sidebar-header">
+        <div class="stats-row">
+          <div class="stat-chip" style="--c:#2563eb"><div class="num" style="color:#2563eb" id="n-saf-advance">0</div><div class="label">SAF推进</div></div>
+          <div class="stat-chip" style="--c:#dc2626"><div class="num" style="color:#dc2626" id="n-rsf-attack">0</div><div class="label">RSF进攻</div></div>
+          <div class="stat-chip" style="--c:#ea580c"><div class="num" style="color:#ea580c" id="n-civilian-sd">0</div><div class="label">平民伤亡</div></div>
+          <div class="stat-chip" style="--c:#059669"><div class="num" style="color:#059669" id="n-humanitarian-sd">0</div><div class="label">人道危机</div></div>
+        </div>
+        <div class="filter-tabs" id="sudan-filters">
+          <div class="filter-tab active" data-filter="ALL">全部事件</div>
+          <div class="filter-tab" data-filter="saf_advance">SAF推进</div>
+          <div class="filter-tab" data-filter="rsf_attack">RSF进攻</div>
+          <div class="filter-tab" data-filter="civilian">平民伤亡</div>
+          <div class="filter-tab" data-filter="humanitarian">人道危机</div>
+          <div class="filter-tab" data-filter="foreign">外部干预</div>
+        </div>
+      </div>
+      <div class="conflict-list" id="sudan-event-list"></div>
+    </div>
+
+    <!-- YEMEN VIEW SIDEBAR -->
+    <div id="yemen-sidebar" class="hidden">
+      <div class="sidebar-header">
+        <div class="stats-row">
+          <div class="stat-chip" style="--c:#dc2626"><div class="num" style="color:#dc2626" id="n-houthi-attack">0</div><div class="label">胡塞攻击</div></div>
+          <div class="stat-chip" style="--c:#2563eb"><div class="num" style="color:#2563eb" id="n-us-strike">0</div><div class="label">美军打击</div></div>
+          <div class="stat-chip" style="--c:#d97706"><div class="num" style="color:#d97706" id="n-shipping">0</div><div class="label">红海航运</div></div>
+          <div class="stat-chip" style="--c:#059669"><div class="num" style="color:#059669" id="n-ground-ye">0</div><div class="label">地面冲突</div></div>
+        </div>
+        <div class="filter-tabs" id="yemen-filters">
+          <div class="filter-tab active" data-filter="ALL">全部事件</div>
+          <div class="filter-tab" data-filter="houthi_attack">胡塞攻击</div>
+          <div class="filter-tab" data-filter="us_strike">美军打击</div>
+          <div class="filter-tab" data-filter="shipping">红海航运</div>
+          <div class="filter-tab" data-filter="ground">地面冲突</div>
+          <div class="filter-tab" data-filter="humanitarian">人道危机</div>
+        </div>
+      </div>
+      <div class="conflict-list" id="yemen-event-list"></div>
+    </div>
+
+    <!-- MYANMAR VIEW SIDEBAR -->
+    <div id="myanmar-sidebar" class="hidden">
+      <div class="sidebar-header">
+        <div class="stats-row">
+          <div class="stat-chip" style="--c:#2563eb"><div class="num" style="color:#2563eb" id="n-resistance">0</div><div class="label">抵抗军</div></div>
+          <div class="stat-chip" style="--c:#dc2626"><div class="num" style="color:#dc2626" id="n-junta-strike">0</div><div class="label">军政府空袭</div></div>
+          <div class="stat-chip" style="--c:#d97706"><div class="num" style="color:#d97706" id="n-battle">0</div><div class="label">城镇争夺</div></div>
+          <div class="stat-chip" style="--c:#8b5cf6"><div class="num" style="color:#8b5cf6" id="n-ethnic">0</div><div class="label">民族武装</div></div>
+        </div>
+        <div class="filter-tabs" id="myanmar-filters">
+          <div class="filter-tab active" data-filter="ALL">全部事件</div>
+          <div class="filter-tab" data-filter="resistance">抵抗军</div>
+          <div class="filter-tab" data-filter="junta_strike">军政府空袭</div>
+          <div class="filter-tab" data-filter="battle">城镇争夺</div>
+          <div class="filter-tab" data-filter="ethnic">民族武装</div>
+          <div class="filter-tab" data-filter="civilian">平民伤亡</div>
+        </div>
+      </div>
+      <div class="conflict-list" id="myanmar-event-list"></div>
+    </div>
+
+    <!-- SYRIA VIEW SIDEBAR -->
+    <div id="syria-sidebar" class="hidden">
+      <div class="sidebar-header">
+        <div class="stats-row">
+          <div class="stat-chip" style="--c:#059669"><div class="num" style="color:#059669" id="n-transition">0</div><div class="label">政权过渡</div></div>
+          <div class="stat-chip" style="--c:#2563eb"><div class="num" style="color:#2563eb" id="n-israel-strike">0</div><div class="label">以色列空袭</div></div>
+          <div class="stat-chip" style="--c:#d97706"><div class="num" style="color:#d97706" id="n-turkey-op">0</div><div class="label">土耳其行动</div></div>
+          <div class="stat-chip" style="--c:#8b5cf6"><div class="num" style="color:#8b5cf6" id="n-sdf">0</div><div class="label">库尔德SDF</div></div>
+        </div>
+        <div class="filter-tabs" id="syria-filters">
+          <div class="filter-tab active" data-filter="ALL">全部事件</div>
+          <div class="filter-tab" data-filter="transition">政权过渡</div>
+          <div class="filter-tab" data-filter="israel_strike">以色列空袭</div>
+          <div class="filter-tab" data-filter="turkey_op">土耳其行动</div>
+          <div class="filter-tab" data-filter="sdf">库尔德SDF</div>
+          <div class="filter-tab" data-filter="isis">ISIS残余</div>
+        </div>
+      </div>
+      <div class="conflict-list" id="syria-event-list"></div>
+    </div>
+
+    <!-- DRC VIEW SIDEBAR -->
+    <div id="drc-sidebar" class="hidden">
+      <div class="sidebar-header">
+        <div class="stats-row">
+          <div class="stat-chip" style="--c:#dc2626"><div class="num" style="color:#dc2626" id="n-m23-advance">0</div><div class="label">M23推进</div></div>
+          <div class="stat-chip" style="--c:#2563eb"><div class="num" style="color:#2563eb" id="n-drc-defense">0</div><div class="label">刚果军防御</div></div>
+          <div class="stat-chip" style="--c:#ea580c"><div class="num" style="color:#ea580c" id="n-civilian-drc">0</div><div class="label">平民伤亡</div></div>
+          <div class="stat-chip" style="--c:#8b5cf6"><div class="num" style="color:#8b5cf6" id="n-foreign">0</div><div class="label">外部干预</div></div>
+        </div>
+        <div class="filter-tabs" id="drc-filters">
+          <div class="filter-tab active" data-filter="ALL">全部事件</div>
+          <div class="filter-tab" data-filter="m23_advance">M23推进</div>
+          <div class="filter-tab" data-filter="drc_defense">刚果军防御</div>
+          <div class="filter-tab" data-filter="civilian">平民伤亡</div>
+          <div class="filter-tab" data-filter="foreign">外部干预</div>
+          <div class="filter-tab" data-filter="humanitarian">人道危机</div>
+        </div>
+      </div>
+      <div class="conflict-list" id="drc-event-list"></div>
+    </div>
+  </div>
+
+  <div class="map-container">
+    <div id="map"></div>
+    <div class="detail-panel" id="detail-panel">
+      <button class="detail-close" onclick="closeDetail()">&times;</button>
+      <div class="detail-content" id="detail-content"></div>
+    </div>
+    <button class="osint-toggle" id="osint-toggle" onclick="toggleOsint()">📡 OSINT 信源目录</button>
+    <div class="osint-panel" id="osint-panel"></div>
+
+    <!-- RIGHT ANALYSIS PANEL -->
+    <div class="analysis-panel" id="analysis-panel">
+      <div class="analysis-header">
+        <h3 id="analysis-title">🔍 深度分析报告</h3>
+        <div class="analysis-subtitle" id="analysis-subtitle">智库研究与顶尖分析师洞察 · 数据更新: 2026年3月24日</div>
+        <button class="analysis-close" onclick="toggleAnalysis()">✕</button>
+      </div>
+      <div class="analysis-content" id="analysis-content"></div>
+    </div>
+
+    <!-- Analysis Toggle Button (floating on right edge) -->
+    <button class="analysis-toggle" id="analysis-toggle" onclick="toggleAnalysis()" title="深度分析报告">
+      <span style="font-size:16px">📊</span>
+      <span class="toggle-label" id="analysis-toggle-label">深度分析</span>
+    </button>
+
+    <div class="iran-legend" id="ukraine-legend" style="display:none">
+      <div class="l-title">图例</div>
+      <div class="l-item"><div class="l-dot" style="background:#dc2626"></div>俄军导弹/无人机打击</div>
+      <div class="l-item"><div class="l-dot" style="background:#2563eb"></div>乌军远程打击/反击</div>
+      <div class="l-item"><div class="l-dot" style="background:#d97706"></div>地面战斗/前线交火</div>
+      <div class="l-item"><div class="l-dot" style="background:#059669"></div>领土收复/反攻</div>
+      <div class="l-item"><div class="l-dot" style="background:#8b5cf6"></div>战俘交换/外交</div>
+    </div>
+    <div class="iran-legend" id="iran-legend">
+      <div class="l-title">图例</div>
+      <div class="l-item"><div class="l-dot" style="background:#2563eb"></div>美国空袭</div>
+      <div class="l-item"><div class="l-dot" style="background:#7c3aed"></div>以色列空袭</div>
+      <div class="l-item"><div class="l-dot" style="background:#dc2626"></div>伊朗导弹/反击</div>
+      <div class="l-item"><div class="l-dot" style="background:#ea580c"></div>平民伤亡区</div>
+      <div class="l-item"><div class="l-dot" style="background:#059669"></div>核设施打击</div>
+    </div>
+    <div class="iran-legend" id="gaza-legend" style="display:none">
+      <div class="l-title">图例</div>
+      <div class="l-item"><div class="l-dot" style="background:#dc2626"></div>以军空袭</div>
+      <div class="l-item"><div class="l-dot" style="background:#d97706"></div>地面行动/推进</div>
+      <div class="l-item"><div class="l-dot" style="background:#2563eb"></div>停火/谈判</div>
+      <div class="l-item"><div class="l-dot" style="background:#059669"></div>人道救援</div>
+      <div class="l-item"><div class="l-dot" style="background:#7c3aed"></div>地区升级</div>
+    </div>
+    <div class="iran-legend" id="sudan-legend" style="display:none">
+      <div class="l-title">图例</div>
+      <div class="l-item"><div class="l-dot" style="background:#2563eb"></div>SAF推进/收复</div>
+      <div class="l-item"><div class="l-dot" style="background:#dc2626"></div>RSF进攻</div>
+      <div class="l-item"><div class="l-dot" style="background:#ea580c"></div>平民伤亡</div>
+      <div class="l-item"><div class="l-dot" style="background:#059669"></div>人道危机</div>
+      <div class="l-item"><div class="l-dot" style="background:#8b5cf6"></div>外部干预</div>
+    </div>
+    <div class="iran-legend" id="yemen-legend" style="display:none">
+      <div class="l-title">图例</div>
+      <div class="l-item"><div class="l-dot" style="background:#dc2626"></div>胡塞攻击</div>
+      <div class="l-item"><div class="l-dot" style="background:#2563eb"></div>美军打击</div>
+      <div class="l-item"><div class="l-dot" style="background:#d97706"></div>红海航运威胁</div>
+      <div class="l-item"><div class="l-dot" style="background:#059669"></div>地面冲突</div>
+      <div class="l-item"><div class="l-dot" style="background:#8b5cf6"></div>人道危机</div>
+    </div>
+    <div class="iran-legend" id="myanmar-legend" style="display:none">
+      <div class="l-title">图例</div>
+      <div class="l-item"><div class="l-dot" style="background:#2563eb"></div>抵抗军进攻</div>
+      <div class="l-item"><div class="l-dot" style="background:#dc2626"></div>军政府空袭</div>
+      <div class="l-item"><div class="l-dot" style="background:#d97706"></div>城镇争夺</div>
+      <div class="l-item"><div class="l-dot" style="background:#8b5cf6"></div>民族武装行动</div>
+      <div class="l-item"><div class="l-dot" style="background:#ea580c"></div>平民伤亡</div>
+    </div>
+    <div class="iran-legend" id="syria-legend" style="display:none">
+      <div class="l-title">图例</div>
+      <div class="l-item"><div class="l-dot" style="background:#059669"></div>政权过渡</div>
+      <div class="l-item"><div class="l-dot" style="background:#2563eb"></div>以色列空袭</div>
+      <div class="l-item"><div class="l-dot" style="background:#d97706"></div>土耳其行动</div>
+      <div class="l-item"><div class="l-dot" style="background:#8b5cf6"></div>库尔德SDF</div>
+      <div class="l-item"><div class="l-dot" style="background:#dc2626"></div>ISIS残余</div>
+    </div>
+    <div class="iran-legend" id="drc-legend" style="display:none">
+      <div class="l-title">图例</div>
+      <div class="l-item"><div class="l-dot" style="background:#dc2626"></div>M23推进</div>
+      <div class="l-item"><div class="l-dot" style="background:#2563eb"></div>刚果军防御</div>
+      <div class="l-item"><div class="l-dot" style="background:#ea580c"></div>平民伤亡</div>
+      <div class="l-item"><div class="l-dot" style="background:#8b5cf6"></div>外部干预</div>
+      <div class="l-item"><div class="l-dot" style="background:#059669"></div>人道危机</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ======================== GLOBAL CONFLICT DATA ========================
+const DATA = {"metadata":{"last_updated":"2026-03-24","total_conflicts":16,"data_sources":["ACLED","ICG","CFR","SIPRI","IISS","Liveuamap"],"risk_levels":["CRITICAL","HIGH","MEDIUM"]},"conflicts":[{"id":"RU-UA","name":"俄乌战争","name_en":"Russia-Ukraine War","region":"东欧","parties":["俄罗斯","乌克兰"],"type":"国际武装冲突","lat":50.25,"lng":30.5,"risk":"CRITICAL","start_date":"2022-02-24","status":"乌克兰2026年2月夺回400km²领土，为2024年以来首次收复失地。停火谈判接近完成(~95%)，但全面结束战争前景不明。双方累计伤亡超百万。","sources":[{"name":"Liveuamap","url":"https://liveuamap.com/"},{"name":"Atlantic Council","url":"https://www.atlanticcouncil.org/"},{"name":"ISW","url":"https://understandingwar.org/"}]},{"id":"SD-CW","name":"苏丹内战","name_en":"Sudan Civil War","region":"东非","parties":["苏丹武装部队(SAF)","快速支援部队(RSF)"],"type":"内战","lat":15.5,"lng":32.55,"risk":"CRITICAL","start_date":"2023-04-15","status":"全球最严重的人道主义危机。超40万人死亡，1100万人流离失所。SAF于2026年1月重返喀土穆，但科尔多凡地区战斗加剧。3370万人需要援助。","sources":[{"name":"ACLED Sudan Dashboard","url":"https://acleddata.com/"},{"name":"ICG Sudan","url":"https://www.crisisgroup.org/africa/horn-africa/sudan"}]},{"id":"IL-PS","name":"加沙战争","name_en":"Gaza War","region":"中东","parties":["以色列","哈马斯","巴勒斯坦伊斯兰圣战组织"],"type":"武装冲突/区域升级","lat":31.35,"lng":34.31,"risk":"CRITICAL","start_date":"2023-10-07","status":"2025年10月停火协议于2026年3月18日被打破。超7.5万巴勒斯坦人、2000+以色列人死亡。2026年1月14日达成过渡治理框架，但局势持续动荡。","sources":[{"name":"OCHA Gaza","url":"https://www.ochaopt.org/"},{"name":"HRW","url":"https://www.hrw.org/world-report/2026"}]},{"id":"IR-IL-US","name":"伊朗-以色列-美国冲突","name_en":"Iran-Israel-US Conflict","region":"中东","parties":["伊朗","以色列","美国","真主党","胡塞武装"],"type":"国际军事冲突","lat":32.43,"lng":53.69,"risk":"CRITICAL","start_date":"2026-02-28","status":"2026年2月28日美以联合对伊朗发动军事行动。通过代理武装力量实现区域升级。伊朗面临潜在混乱和新战争风险。","sources":[{"name":"Global Conflict Awareness","url":"https://globalconflictawareness.com/"},{"name":"CFR Iran Tracker","url":"https://www.cfr.org/global-conflict-tracker/"}]},{"id":"YE-CW","name":"也门内战/胡塞冲突","name_en":"Yemen Civil War","region":"阿拉伯半岛","parties":["也门政府","胡塞武装","沙特阿拉伯","阿联酋"],"type":"内战/区域干预","lat":15.36,"lng":48.52,"risk":"HIGH","start_date":"2015-03-26","status":"胡塞武装控制西北部包括首都萨那。2022年以来维持不稳定停火。红海攻击2025年暂停后恢复。2310万也门人需要援助。","sources":[{"name":"ACLED Yemen","url":"https://acleddata.com/"},{"name":"Al Jazeera","url":"https://www.aljazeera.com/tag/yemen/"}]},{"id":"SY-TR-IL","name":"叙利亚政治过渡/土以博弈","name_en":"Syria Political Transition","region":"中东","parties":["以色列","土耳其","叙利亚过渡政府","库尔德SDF"],"type":"紧张地带/武装冲突","lat":34.8,"lng":38.99,"risk":"HIGH","start_date":"2024-12-01","status":"阿萨德政权2024年底垮台后，土耳其和以色列争夺对后阿萨德叙利亚的影响力。以色列7个月内发动988次空袭。意外升级风险高。","sources":[{"name":"Stimson Center","url":"https://www.stimson.org/"},{"name":"ICG Syria","url":"https://www.crisisgroup.org/middle-east-north-africa/syria"}]},{"id":"IN-PK","name":"印巴克什米尔紧张局势","name_en":"India-Pakistan Kashmir Tensions","region":"南亚","parties":["印度","巴基斯坦"],"type":"冻结冲突/周期性武装冲突","lat":34.5,"lng":76.5,"risk":"HIGH","start_date":"1947-10-22","status":"2025年4月致命袭击后双方军事打击。5月10日停火。印度威胁中止印度河水条约。2026年新冲突概率中等偏高。","sources":[{"name":"CFR Tracker","url":"https://www.cfr.org/global-conflict-tracker/"},{"name":"ICG Kashmir","url":"https://www.crisisgroup.org/asia/south-asia"}]},{"id":"VE-US","name":"委内瑞拉危机","name_en":"Venezuela-US Crisis","region":"拉丁美洲","parties":["美国","委内瑞拉","俄罗斯","中国"],"type":"军事干预","lat":6.42,"lng":-66.59,"risk":"HIGH","start_date":"2026-01-03","status":"2026年1月3日美国'绝对决心'行动逮捕马杜罗。被视为违反国际法。德尔西·罗德里格斯1月6日宣誓就任临时总统。区域溢出风险。","sources":[{"name":"Brookings","url":"https://www.brookings.edu/"},{"name":"ACLED Americas","url":"https://acleddata.com/"}]},{"id":"SAHEL","name":"萨赫勒地区叛乱","name_en":"Sahel Insurgency","region":"西非","parties":["马里/布基纳法索/尼日尔军政府","AQIM","ISIS分支","瓦格纳集团"],"type":"叛乱/恐怖主义","lat":14.5,"lng":-1.5,"risk":"HIGH","start_date":"2012-01-16","status":"基地组织和ISIS附属组织向沿海西非推进。俄罗斯通过军事存在扩大影响。人道危机持续。","sources":[{"name":"ICG Sahel","url":"https://www.crisisgroup.org/africa/sahel"},{"name":"ACLED Sahel","url":"https://acleddata.com/"}]},{"id":"MM-CW","name":"缅甸内战","name_en":"Myanmar Civil War","region":"东南亚","parties":["缅甸军政府","民族武装组织","人民防卫军"],"type":"内战","lat":21.91,"lng":95.96,"risk":"HIGH","start_date":"2021-02-01","status":"军事行动升级，犯罪活动加剧，人道主义流离失所。被美国专家列为2026年首要关注对象。","sources":[{"name":"ICG Myanmar","url":"https://www.crisisgroup.org/asia/south-east-asia/myanmar"},{"name":"ACLED Myanmar","url":"https://acleddata.com/"}]},{"id":"CD-M23","name":"刚果(金)东部冲突","name_en":"DRC Eastern Conflict","region":"中非","parties":["刚果政府","M23","FDLR","卢旺达(涉嫌支持)"],"type":"武装冲突","lat":-1.67,"lng":29.22,"risk":"HIGH","start_date":"2022-03-01","status":"种族和政治冲突持续。被列为2026年美国外交政策首要关注对象。复杂的区域卷入和人道危机。","sources":[{"name":"ICG DRC","url":"https://www.crisisgroup.org/africa/great-lakes/democratic-republic-congo"},{"name":"ACLED DRC","url":"https://acleddata.com/"}]},{"id":"SO-AS","name":"索马里叛乱","name_en":"Somalia Al-Shabaab Insurgency","region":"东非","parties":["索马里政府","青年党(Al-Shabaab)"],"type":"叛乱","lat":5.15,"lng":46.2,"risk":"MEDIUM","start_date":"2006-01-01","status":"青年党叛乱持续，政府军与非盟部队联合打击。安全局势脆弱。","sources":[{"name":"ICG Somalia","url":"https://www.crisisgroup.org/africa/horn-africa/somalia"}]},{"id":"NG-BH","name":"尼日利亚安全危机","name_en":"Nigeria Security Crisis","region":"西非","parties":["尼日利亚政府","博科圣地","ISWAP","牧民武装"],"type":"叛乱/族群冲突","lat":9.08,"lng":8.68,"risk":"MEDIUM","start_date":"2009-07-26","status":"博科圣地和ISWAP在东北部活跃。中部牧民-农民冲突。西北绑架危机。","sources":[{"name":"ICG Nigeria","url":"https://www.crisisgroup.org/africa/west-africa/nigeria"}]},{"id":"LB-HZ","name":"黎巴嫩-真主党危机","name_en":"Lebanon-Hezbollah Crisis","region":"中东","parties":["以色列","真主党","黎巴嫩"],"type":"军事对峙","lat":33.83,"lng":35.84,"risk":"HIGH","start_date":"2023-10-08","status":"以色列军事行动打击真主党以阻止其恢复，并威胁叙利亚政治过渡。伊朗-以色列更广泛紧张局势的一部分。","sources":[{"name":"CFR Lebanon","url":"https://www.cfr.org/global-conflict-tracker/"},{"name":"ICG Lebanon","url":"https://www.crisisgroup.org/middle-east-north-africa/lebanon"}]},{"id":"HT-GV","name":"海地帮派暴力","name_en":"Haiti Gang Violence","region":"加勒比","parties":["帮派联盟","海地过渡政府","肯尼亚领导的多国安全支持特派团"],"type":"帮派暴力/国家崩溃","lat":18.97,"lng":-72.29,"risk":"MEDIUM","start_date":"2021-07-07","status":"帮派控制太子港大部分地区。多国安全支持特派团2024年部署但效果有限。人道危机严重。","sources":[{"name":"ICG Haiti","url":"https://www.crisisgroup.org/latin-america-caribbean/haiti"}]},{"id":"LY-CW","name":"利比亚分裂冲突","name_en":"Libya Divided Conflict","region":"北非","parties":["的黎波里民族团结政府(GNU)","托布鲁克国民代表大会(HoR)/利比亚国民军(LNA)"],"type":"分裂/低烈度冲突","lat":32.88,"lng":13.19,"risk":"MEDIUM","start_date":"2014-05-16","status":"两个竞争政府。部落冲突。外国势力干预。统一选举遥遥无期。","sources":[{"name":"ICG Libya","url":"https://www.crisisgroup.org/middle-east-north-africa/north-africa/libya"}]}],"osint_sources":{"conflict_trackers":[{"name":"ACLED","url":"https://acleddata.com/","desc":"全球武装冲突位置和事件数据，实时更新","free":true},{"name":"Liveuamap","url":"https://liveuamap.com/","desc":"实时全球冲突地图，聚合社交媒体和卫星数据","free":true},{"name":"World Monitor","url":"https://www.worldmonitor.app/","desc":"AI驱动的全球军事追踪，25+数据层","free":true},{"name":"GeoConfirmed","url":"https://geoconfirmed.org/","desc":"志愿者驱动的OSINT地理定位验证项目","free":true},{"name":"Global Conflict Awareness","url":"https://globalconflictawareness.com/","desc":"实时冲突追踪仪表板","free":true},{"name":"Defcon Level","url":"https://www.defconlevel.com/","desc":"全球冲突地图和特定冲突追踪","free":true}],"think_tanks":[{"name":"International Crisis Group","url":"https://www.crisisgroup.org/","desc":"基于实地调研的深度冲突分析","free":true},{"name":"SIPRI","url":"https://www.sipri.org/","desc":"军费、武器贸易、裁军数据和研究","free":true},{"name":"IISS","url":"https://www.iiss.org/","desc":"全球安全权威分析，武装冲突调查","free":true},{"name":"CFR Global Conflict Tracker","url":"https://www.cfr.org/global-conflict-tracker/","desc":"交互式冲突追踪和专家分析","free":true},{"name":"Stimson Center","url":"https://www.stimson.org/","desc":"全球十大风险评估","free":true}],"news_defense":[{"name":"Defence24","url":"https://defence24.com/","desc":"独立防务专家分析和行业报告","free":true},{"name":"Defense News","url":"https://www.defensenews.com/","desc":"防务政治、商业和技术","free":true},{"name":"Defense One","url":"https://www.defenseone.com/","desc":"国家安全新闻和分析","free":true},{"name":"The Defense Post","url":"https://thedefensepost.com/","desc":"全球防务新闻和深度分析","free":true}],"satellite_imagery":[{"name":"Sentinel Hub","url":"https://www.sentinel-hub.com/","desc":"多源卫星数据，0.5-3m分辨率","free":true},{"name":"Copernicus","url":"https://dataspace.copernicus.eu/","desc":"欧空局免费卫星数据","free":true},{"name":"Google Earth Pro","url":"https://www.google.com/earth/","desc":"历史卫星影像对比","free":true}]}};
+
+// ======================== UKRAINE WAR EVENT DATA ========================
+const ukraineEvents = [
+  {id:"u01",date:"2026-02-03",loc:"基辅/多地区",loc_en:"Kyiv/Multi-region",lat:50.45,lng:30.52,cat:"ru_strike",   target:"能源基础设施（变电站、发电厂）",target_en:"Energy infrastructure (substations, power plants)",fatalities:null,   desc:"俄军发射约30枚伊斯坎德尔-M弹道导弹、50-60枚巡航导弹（Kh-101、口径、Kh-32），打击基辅、哈尔科夫、第聂伯罗、切尔卡瑟、敖德萨、苏梅、文尼察、基洛沃格勒、扎波罗热等九个州的能源设施。",desc_en:"Russian forces launched ~30 Iskander-M ballistic missiles and 50-60 cruise missiles (Kh-101, Kalibr, Kh-32), striking energy facilities across nine oblasts including Kyiv, Kharkiv, Dnipro, Cherkasy, Odesa, Sumy, Vinnytsia, Kirovohrad, and Zaporizhzhia.",   sources:[{n:"Liveuamap",u:"https://liveuamap.com/"},{n:"CNN",u:"https://www.cnn.com/2026/02/02/europe/russia-resumes-strikes-ukraine-kyiv-intl-hnk"}]},
+  {id:"u02",date:"2026-02-04",loc:"别尔哥罗德州",loc_en:"Belgorod Oblast, Russia",lat:50.60,lng:36.60,cat:"ua_strike",   target:"S-400防空雷达站",target_en:"S-400 air defense radar station",fatalities:null,   desc:"乌军精确打击别尔哥罗德州克拉斯诺耶村一处S-400防空雷达站，使用FPV无人机/精确制导武器摧毁。",desc_en:"Ukrainian forces conducted a precision strike on an S-400 air defense radar station in Krasnoyye village, Belgorod Oblast, destroying it using FPV drones and precision-guided weapons.",   sources:[{n:"Critical Threats",u:"https://www.criticalthreats.org/analysis/russian-offensive-campaign-assessment-february-1-2026/"}]},
+  {id:"u03",date:"2026-02-15",loc:"第聂伯罗彼得罗夫斯克州",loc_en:"Dnipropetrovsk Oblast",lat:48.28,lng:35.30,cat:"territory",   target:"奥列克桑德里夫卡轴线",target_en:"Aleksandrivka axis",fatalities:null,   desc:"乌军在第聂伯罗彼得罗夫斯克州奥列克桑德里夫卡轴线发起反攻，空中突击部队恢复285.6平方公里领土控制。2月全月乌军收复超400平方公里，为2024年以来首次净收复领土。",desc_en:"Ukrainian forces launched a counteroffensive along the Aleksandrivka axis in Dnipropetrovsk Oblast, with airborne troops recovering 285.6 sq km of territory. Over 400 sq km were recaptured in February—the first net territorial gains since 2024.",   sources:[{n:"Kyiv Independent",u:"https://kyivindependent.com/ukraine-war-latest-ukraine-captured-more-territory-than-it-lost-to-russia-over-february-2026-syrskyi-says/"},{n:"UNITED24",u:"https://united24media.com/latest-news/ukraine-liberates-nearly-all-of-dnipropetrovsk-region-in-2026-counteroffensive-reclaiming-400-km2-16673"}]},
+  {id:"u04",date:"2026-02-21",loc:"多地区",loc_en:"Multi-region",lat:49.84,lng:24.03,cat:"ru_strike",   target:"供水与铁路基础设施",target_en:"Water supply and railway infrastructure",fatalities:null,   desc:"俄军发射347枚无人机和导弹，打击目标从传统能源设施扩展至供水和铁路系统，标志着打击策略转变。",desc_en:"Russian forces fired 347 drones and missiles, expanding strike targets beyond traditional energy infrastructure to water supply and railway systems, marking a shift in strike strategy.",   sources:[{n:"Critical Threats",u:"https://www.criticalthreats.org/"},{n:"ACLED",u:"https://acleddata.com/update/ukraine-war-situation-update-7-13-february-2026/"}]},
+  {id:"u05",date:"2026-02-28",loc:"敖德萨州",loc_en:"Odesa Oblast",lat:46.48,lng:30.73,cat:"ru_strike",   target:"DTEK敖德萨电力网络大型变电站",target_en:"DTEK Odesa power grid major substation",fatalities:null,   desc:"俄军无人机和导弹打击敖德萨州DTEK电力网络大型变电站，造成区域供电严重受损。",desc_en:"Russian drones and missiles struck a major substation of the DTEK power grid in Odesa Oblast, causing severe regional power disruption.",   sources:[{n:"ACLED",u:"https://acleddata.com/update/ukraine-war-situation-update-7-13-february-2026/"}]},
+  {id:"u06",date:"2026-03-05",loc:"基辅地区",loc_en:"Kyiv Region",lat:50.50,lng:30.60,cat:"ru_strike",   target:"居民楼、教育设施、能源设施",target_en:"Residential buildings, educational facilities, energy infrastructure",fatalities:4,   desc:"俄军发射约430架无人机（含250架'沙赫德'攻击无人机）和68枚导弹。乌军防空系统拦截402架无人机和58枚导弹。4人死亡、15人受伤，基辅四个区受损。",desc_en:"Russian forces launched ~430 drones (including 250 Shaheds) and 68 missiles. Ukrainian air defense systems intercepted 402 drones and 58 missiles. 4 killed, 15 wounded; four districts in Kyiv damaged.",   sources:[{n:"NPR",u:"https://www.npr.org/2026/03/14/nx-s1-5747959/russian-strike-kyiv-region"},{n:"ISW",u:"https://understandingwar.org/"}]},
+  {id:"u07",date:"2026-03-05",loc:"交换地点",loc_en:"Exchange Point",lat:51.30,lng:34.00,cat:"diplomacy",   target:"200对200战俘交换",target_en:"200-for-200 POW exchange",fatalities:null,   desc:"美国和阿联酋斡旋下，乌俄双方各释放200名战俘。这是停火谈判停滞期间的首次大规模交换。",desc_en:"Mediated by the US and UAE, Ukraine and Russia each released 200 POWs. This was the first large-scale exchange during the ceasefire talks stalemate.",   sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/3/5/ukraine-russia-free-200-pows-each-in-latest-swap-amid-stalled-peace-talks"}]},
+  {id:"u08",date:"2026-03-06",loc:"前线",loc_en:"Frontline",lat:49.00,lng:37.80,cat:"diplomacy",   target:"500对500战俘交换",target_en:"500-for-500 POW exchange",fatalities:null,   desc:"战争以来最大规模战俘交换之一。泽连斯基当日视察前线。美国和阿联酋斡旋。500名乌克兰战俘获释。",desc_en:"One of the largest-scale POW exchanges since the war's start. Zelenskyy visited the frontline on this day. Mediated by US and UAE. 500 Ukrainian POWs released.",   sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/3/6/zelenskyy-visits-front-line-as-ukraine-and-russia-swap-500-prisoners-each"}]},
+  {id:"u09",date:"2026-03-10",loc:"布良斯克",loc_en:"Bryansk, Russia",lat:53.24,lng:34.37,cat:"ua_strike",   target:"Kremniy El电子工厂（导弹部件生产）",target_en:"Kremniy El electronics factory (missile component production)",fatalities:null,   desc:"乌军使用'风暴之影'巡航导弹打击布良斯克Kremniy El电子工厂。该厂为俄军导弹生产电子元件。主生产车间和仓库受损，预计停产6个月。",desc_en:"Ukrainian forces struck the Kremniy El electronics factory in Bryansk using Storm Shadow cruise missiles. The factory produces electronic components for Russian missiles. Main production workshops and warehouses were damaged; production estimated to be halted for 6 months.",   sources:[{n:"Kyiv Post/ISW",u:"https://www.kyivpost.com/post/71469"}]},
+  {id:"u10",date:"2026-03-10",loc:"波克罗夫斯克前线",loc_en:"Pokrovsk Front",lat:48.28,lng:37.18,cat:"ground",   target:"波克罗夫斯克防御阵地",target_en:"Pokrovsk defensive positions",fatalities:null,   desc:"波克罗夫斯克前线录得130次战斗交火。乌军防御部队击退29次俄军进攻。俄军试图向德鲁日基夫卡方向推进（距阵地12公里）。",desc_en:"The Pokrovsk front recorded 130 combat engagements. Ukrainian defensive forces repelled 29 Russian attacks. Russian forces attempted to advance toward Druzhkivka (12 km from the position).",   sources:[{n:"Ukraine General Staff",u:"https://www.pravda.com.ua/eng/news/2026/03/10/8024731/"}]},
+  {id:"u11",date:"2026-03-11",loc:"陶里亚蒂",loc_en:"Togliatti, Samara Oblast, Russia",lat:53.51,lng:49.42,cat:"ua_strike",   target:"KuibyshevAzot化工厂",target_en:"KuibyshevAzot chemical plant",fatalities:null,   desc:"乌军无人机打击俄罗斯萨马拉州陶里亚蒂市KuibyshevAzot化工厂。该厂是俄罗斯重要化学品生产基地。",desc_en:"Ukrainian drones struck the KuibyshevAzot chemical plant in Togliatti, Samara Oblast, Russia. The plant is an important chemical production base for Russia.",   sources:[{n:"Meduza",u:"https://meduza.io/"},{n:"ISW",u:"https://understandingwar.org/"}]},
+  {id:"u12",date:"2026-03-13",loc:"基洛沃-切佩茨克",loc_en:"Kirovo-Chepetsk, Kirov Oblast, Russia",lat:58.55,lng:50.03,cat:"ua_strike",   target:"Uralchem化工综合体",target_en:"Uralchem chemical complex",fatalities:null,   desc:"乌军无人机打击基洛夫州基洛沃-切佩茨克市Uralchem化工综合体。该打击目标距乌克兰边境超1200公里，展示乌军远程打击能力。",desc_en:"Ukrainian drones struck the Uralchem chemical complex in Kirovo-Chepetsk, Kirov Oblast. The strike target is over 1,200 km from the Ukrainian border, demonstrating Ukraine's long-range strike capability.",   sources:[{n:"OSW",u:"https://www.osw.waw.pl/en/publikacje/analyses/2026-03-17/ukraine-launches-massed-drone-attacks-russia-day-1483-war"}]},
+  {id:"u13",date:"2026-03-14",loc:"基辅/多州",loc_en:"Kyiv/Multi-region",lat:50.44,lng:30.55,cat:"ru_strike",   target:"能源基础设施",target_en:"Energy infrastructure",fatalities:1,   desc:"俄军发射2枚锆石导弹、13枚伊斯坎德尔弹道导弹、25枚口径巡航导弹及数百架无人机。乌军拦截49枚巡航导弹（全部）和402架无人机。1人死亡、多人受伤。打击覆盖基辅、哈尔科夫、切尔卡瑟、第聂伯罗彼得罗夫斯克、基洛沃格勒、扎波罗热等六州。",desc_en:"Russian forces launched 2 Zircon missiles, 13 Iskander ballistic missiles, 25 Kalibr cruise missiles, and hundreds of drones. Ukrainian forces intercepted 49 cruise missiles (all) and 402 drones. 1 killed, multiple wounded. Strikes covered six oblasts: Kyiv, Kharkiv, Cherkasy, Dnipropetrovsk, Kirovohrad, and Zaporizhzhia.",   sources:[{n:"PBS News",u:"https://www.pbs.org/newshour/world/russia-launches-massive-strike-on-kyiv-killing-1-and-wounding-many-ahead-of-ukraine-u-s-talks"},{n:"ISW",u:"https://understandingwar.org/"}]},
+  {id:"u14",date:"2026-03-17",loc:"堡垒带前线",loc_en:"Fortress Belt",lat:48.73,lng:37.56,cat:"ground",   target:"斯洛维扬斯克-克拉马托尔斯克-德鲁日基夫卡堡垒带",target_en:"Slovyansk-Kramatorsk-Druzhkivka Fortress Belt",fatalities:null,   desc:"俄军发动春季攻势，4天内在波克罗夫斯克（163次进攻）、科斯坦丁尼夫卡（84次突击）、胡利艾波列等多个方向发起619次突击行动。目标是突破乌军50公里长的'堡垒带'防线。",desc_en:"Russian forces launched their spring offensive, conducting 619 attack operations over 4 days across multiple directions: Pokrovsk (163 attacks), Kostiantynivka (84 assaults), and Kupiansk. The goal is to break through the 50 km-long 'Fortress Belt' defense line.",   sources:[{n:"Ukraine Pravda",u:"https://www.pravda.com.ua/eng/news/2026/03/23/8026764/"},{n:"ISW",u:"https://understandingwar.org/"}]},
+  {id:"u15",date:"2026-03-20",loc:"恰西夫亚尔",loc_en:"Chasiv Yar",lat:48.60,lng:37.85,cat:"ground",   target:"恰西夫亚尔城区",target_en:"Chasiv Yar urban area",fatalities:null,   desc:"恰西夫亚尔持续激烈城市战。俄军试图改善战术阵地，乌军在建筑物间进行逐屋防守。该城是堡垒带关键制高点。",desc_en:"Intense urban combat continues in Chasiv Yar. Russian forces attempt to improve tactical positions while Ukrainian forces conduct house-by-house defense. The city is a key vantage point in the Fortress Belt.",   sources:[{n:"ISW",u:"https://understandingwar.org/"},{n:"DeepState",u:"https://deepstatemap.live/en"}]},
+  {id:"u16",date:"2026-03-21",loc:"萨拉托夫/马里乌波尔",loc_en:"Saratov/Mariupol",lat:51.53,lng:46.03,cat:"ua_strike",   target:"萨拉托夫炼油厂 + 马里乌波尔Rubikon精英无人机部队指挥所",target_en:"Saratov oil refinery + Mariupol Rubikon elite drone unit command post",fatalities:null,   desc:"乌军一夜发射近300架无人机，同时打击萨拉托夫州炼油厂和马里乌波尔俄军'Rubikon'精英无人机部队指挥所。乌军已将俄罗斯炼油产能削减17%（约110万桶/日）。",desc_en:"Ukrainian forces fired nearly 300 drones in one night, simultaneously striking the oil refinery in Saratov Oblast and the Rubikon elite drone unit command post in Mariupol. Ukrainian forces have reduced Russian refining capacity by 17% (approx. 1.1 million barrels/day).",   sources:[{n:"Kyiv Independent",u:"https://kyivindependent.com/ukraine-war-latest-2026-03-20/"}]},
+  {id:"u17",date:"2026-03-22",loc:"敖德萨",loc_en:"Odesa",lat:46.47,lng:30.75,cat:"ru_strike",   target:"农田、粮食仓储、港口设施",target_en:"Agricultural lands, grain storage, port facilities",fatalities:null,   desc:"俄军无人机打击敖德萨农业区域和港口基础设施。粮食仓储受损，居民区也受到波及。",desc_en:"Russian drones struck the Odesa agricultural area and port infrastructure. Grain storage was damaged, and residential areas were also affected.",   sources:[{n:"Kyiv Independent",u:"https://kyivindependent.com/ukraine-war-latest-2026-03-20/"}]},
+  {id:"u18",date:"2026-03-22",loc:"哈尔科夫地区",loc_en:"Kharkiv Region",lat:49.99,lng:36.23,cat:"ru_strike",   target:"9个定居点",target_en:"9 settlements",fatalities:null,   desc:"俄军使用制导炸弹和无人机攻击哈尔科夫地区9个定居点。1名女性受伤。",desc_en:"Russian forces attacked 9 settlements in Kharkiv Region using guided bombs and drones. 1 woman wounded.",   sources:[{n:"ISW",u:"https://understandingwar.org/"}]},
+  {id:"u19",date:"2026-03-22",loc:"扎波罗热前线",loc_en:"Zaporizhzhia Front",lat:47.50,lng:35.84,cat:"ground",   target:"斯捷普诺戈尔斯克/诺沃博伊科夫卡阵地",target_en:"Stepnohirsk/Novobojkivka positions",fatalities:null,   desc:"扎波罗热前线进入深度消耗战态势。双方在斯捷普诺戈尔斯克、诺沃博伊科夫卡、诺沃亚科夫列夫卡、巴甫洛夫卡之间进行战术无人机对抗。领土变化微小。",desc_en:"The Zaporizhzhia front entered a deep attrition warfare phase. Both sides engaged in tactical drone combat between Stepnohirsk, Novobojkivka, Novakavlivka, and Pavlivka. Territorial changes were minimal.",   sources:[{n:"SouthFront",u:"https://maps.southfront.press/military-situation-in-ukraine-on-march-22-2026-maps-update"}]},
+  {id:"u20",date:"2026-03-23",loc:"普里莫尔斯克港",loc_en:"Primorsk, Baltic Sea, Russia",lat:59.71,lng:28.03,cat:"ua_strike",   target:"普里莫尔斯克石油港（年处理6000万吨）",target_en:"Primorsk oil port (annual capacity 60 million tons)",fatalities:null,   desc:"乌军无人机打击波罗的海沿岸普里莫尔斯克石油港，引发大火。该港年处理原油6000万吨，是俄罗斯关键能源出口通道。距芬兰边境仅数十公里。",desc_en:"Ukrainian drones struck the Primorsk oil port on the Baltic coast, triggering a fire. The port handles 60 million tons of crude oil annually and is a critical energy export channel for Russia. It is located only tens of kilometers from the Finnish border.",   sources:[{n:"France24",u:"https://www.france24.com/en/live-news/20260323-ukraine-hits-major-russian-oil-port-near-finland"},{n:"Kyiv Independent",u:"https://kyivindependent.com/ukraine-war-latest-2026-03-23/"}]}
+];
+
+const uaCatColors = {ru_strike:'#dc2626',ua_strike:'#2563eb',ground:'#d97706',territory:'#059669',diplomacy:'#8b5cf6'};
+const uaCatNames = {ru_strike:'俄军打击',ua_strike:'乌军反击',ground:'地面战斗',territory:'领土变动',diplomacy:'外交/交换'};
+
+// ======================== IRAN STRIKE EVENT DATA ========================
+const iranEvents = [
+  {id:"e01",date:"2026-03-01",loc:"德黑兰",loc_en:"Tehran",lat:35.69,lng:51.39,cat:"airstrike",attacker:"以色列",attacker_en:"Israel",   target:"IRGC马利克·阿什塔尔大楼",target_en:"IRGC Malik al-Ashtar building",fatalities:null,   desc:"以色列导弹精确打击IRGC马利克·阿什塔尔大楼，建筑被完全摧毁。伊朗国际电视台公布了打击后影像。",desc_en:"Israeli missiles precisely struck the IRGC Malik al-Ashtar building, completely destroying the structure. Iran's state TV released post-strike footage.",   sources:[{n:"Iran International",u:"https://www.iranintl.com/"},{n:"ACLED Iran Crisis",u:"https://acleddata.com/iran-crisis-live"}]},
+  {id:"e02",date:"2026-03-02",loc:"德黑兰",loc_en:"Tehran",lat:35.72,lng:51.42,cat:"airstrike",attacker:"以色列",attacker_en:"Israel",   target:"伊朗伊斯兰共和国广播局(IRIB)总部",target_en:"Iran Islamic Republic Broadcasting (IRIB) headquarters",fatalities:null,   desc:"以色列单独空袭行动打击IRIB国家广播电台总部大楼。伊朗国会大楼同期遭到空袭。",desc_en:"Israeli solo air operation struck the IRIB national broadcasting headquarters building. The Iranian parliament building was also struck during the same period.",   sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/3/23/unprecedented-israel-us-carry-out-extensive-strikes-across-iran"}]},
+  {id:"e03",date:"2026-03-02",loc:"德黑兰(东部)",loc_en:"Tehran East",lat:35.70,lng:51.50,cat:"missile",attacker:"美国/以色列",attacker_en:"US/Israel",   target:"军事与通讯设施",target_en:"Military and communications facilities",fatalities:null,   desc:"联合打击德黑兰东部多处军事和通讯设施。市区可闻爆炸声。据ACLED记录，德黑兰是承受最重轰炸的城市。",desc_en:"Joint strike on multiple military and communications facilities in eastern Tehran. Explosions heard across the city. According to ACLED records, Tehran suffered the heaviest bombing.",   sources:[{n:"ACLED Dashboard",u:"https://acleddata.com/iran-crisis-live"}]},
+  {id:"e04",date:"2026-02-28",loc:"帕尔钦",loc_en:"Parchin",lat:35.52,lng:51.77,cat:"nuclear",attacker:"美国/以色列",attacker_en:"US/Israel",   target:"帕尔钦军事综合体",target_en:"Parchin military complex",fatalities:null,   desc:"战争首日打击目标之一。帕尔钦是伊朗重要军事研发基地，涉及核武器相关实验。",desc_en:"One of the first-day strike targets. Parchin is an important Iranian military R&D base involved in nuclear weapons-related experiments.",   sources:[{n:"Alma Center",u:"https://israel-alma.org/"},{n:"Critical Threats",u:"https://www.criticalthreats.org/"}]},
+  {id:"e05",date:"2026-03-05",loc:"全国多地",loc_en:"Multiple",lat:33.50,lng:52.00,cat:"missile",attacker:"伊朗(反击)",attacker_en:"Iran (counterattack)",   target:"以色列及地区目标",target_en:"Israel and regional targets",fatalities:null,   desc:"伊朗自2月28日以来已发射超500枚弹道导弹和近2000架无人机。打击目标涵盖以色列、科威特、卡塔尔、阿联酋、沙特、伊拉克、约旦、阿曼、巴林，甚至塞浦路斯和阿塞拜疆。",desc_en:"Since February 28, Iran has fired over 500 ballistic missiles and nearly 2,000 drones. Strike targets span Israel, Kuwait, Qatar, UAE, Saudi Arabia, Iraq, Jordan, Oman, Bahrain, and even Cyprus and Azerbaijan.",   sources:[{n:"ACLED Data",u:"https://acleddata.com/curated/data-us-iran-regional-conflict-daily"}]},
+  {id:"e06",date:"2026-03-21",loc:"纳坦兹",loc_en:"Natanz",lat:33.72,lng:51.73,cat:"nuclear",attacker:"美国",attacker_en:"US",   target:"纳坦兹核设施",target_en:"Natanz nuclear facility",fatalities:null,   desc:"美军使用钻地炸弹打击纳坦兹铀浓缩设施。IAEA确认未发生异常辐射泄漏。伊朗原子能组织谴责此为'犯罪袭击'。",desc_en:"US forces struck the uranium enrichment facility at Natanz using bunker-busting munitions. The IAEA confirmed no abnormal radiation leakage. Iran's Atomic Organization condemned it as a 'criminal attack.'",   sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/3/22/iran-war-whats-happening-on-day-23-of-us-israel-attacks"},{n:"IAEA",u:"https://www.iaea.org/"}]},
+  {id:"e07",date:"2026-03-22",loc:"霍拉马巴德",loc_en:"Khorramabad",lat:33.49,lng:48.35,cat:"civilian",attacker:"美国/以色列",attacker_en:"US/Israel",   target:"居民楼",target_en:"Residential building",fatalities:1,   desc:"打击命中霍拉马巴德市一栋居民楼，造成1名儿童死亡，多人受伤。据法尔斯通讯社报道。",desc_en:"A strike hit a residential building in Khorramabad city, killing 1 child and wounding multiple people. Reported by FARS news agency.",   sources:[{n:"Fars News",u:"https://www.farsnews.ir/"},{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/3/23/unprecedented-israel-us-carry-out-extensive-strikes-across-iran"}]},
+  {id:"e08",date:"2026-03-22",loc:"大不里士",loc_en:"Tabriz",lat:38.08,lng:46.29,cat:"civilian",attacker:"以色列",attacker_en:"Israel",   target:"民宅",target_en:"Residential homes",fatalities:6,   desc:"大不里士市遭到两轮致命打击，至少6人在民宅中遇难。危机管理部门主任证实。",desc_en:"Tabriz city suffered two rounds of deadly strikes, with at least 6 people killed in residential homes. The director of the crisis management department confirmed.",   sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/3/23/unprecedented-israel-us-carry-out-extensive-strikes-across-iran"}]},
+  {id:"e09",date:"2026-03-22",loc:"伊斯法罕",loc_en:"Isfahan",lat:32.65,lng:51.67,cat:"airstrike",attacker:"美国/以色列",attacker_en:"US/Israel",   target:"军事/基础设施",target_en:"Military/infrastructure",fatalities:null,   desc:"伊斯法罕市传出大规模爆炸声。该市周边有多个军事和核相关设施。",desc_en:"Large-scale explosions heard in Isfahan city. The surrounding area has multiple military and nuclear-related facilities.",   sources:[{n:"ACLED",u:"https://acleddata.com/iran-crisis-live"}]},
+  {id:"e10",date:"2026-03-22",loc:"卡拉季",loc_en:"Karaj",lat:35.84,lng:50.97,cat:"airstrike",attacker:"美国/以色列",attacker_en:"US/Israel",   target:"军事设施",target_en:"Military facilities",fatalities:null,   desc:"卡拉季市发生大规模爆炸。该市靠近德黑兰，是重要的军事和工业中心。",desc_en:"Major explosions in Karaj city. The city is close to Tehran and is an important military and industrial center.",   sources:[{n:"ACLED",u:"https://acleddata.com/iran-crisis-live"}]},
+  {id:"e11",date:"2026-03-22",loc:"阿瓦士",loc_en:"Ahvaz",lat:31.32,lng:48.68,cat:"civilian",attacker:"美国/以色列",attacker_en:"US/Israel",   target:"城市区域/医院",target_en:"Urban areas/hospital",fatalities:null,   desc:"阿瓦士市遭到大规模爆炸，一家医院受到打击影响。",desc_en:"Ahvaz city was subjected to large-scale explosions. One hospital was affected by the strikes.",   sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/3/23/unprecedented-israel-us-carry-out-extensive-strikes-across-iran"}]},
+  {id:"e12",date:"2026-03-22",loc:"阿巴斯港",loc_en:"Bandar Abbas",lat:27.19,lng:56.27,cat:"airstrike",attacker:"以色列",attacker_en:"Israel",   target:"广播电台",target_en:"Broadcasting station",fatalities:1,   desc:"阿巴斯港一座广播电台遭到打击，1人死亡。该市是波斯湾重要港口。",desc_en:"A broadcasting station in Bandar Abbas was struck, killing 1 person. The city is an important port on the Persian Gulf.",   sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/3/23/unprecedented-israel-us-carry-out-extensive-strikes-across-iran"}]},
+  {id:"e13",date:"2026-03-23",loc:"库姆省",loc_en:"Qom Province",lat:34.64,lng:50.88,cat:"airstrike",attacker:"美国",attacker_en:"US",   target:"涡轮发动机生产厂(IRGC无人机/飞机部件)",target_en:"Turbine engine production facility (IRGC drone/aircraft components)",fatalities:null,   desc:"美军宣布打击库姆省一处涡轮发动机生产基地，该设施为IRGC生产无人机和飞机部件。",desc_en:"US forces announced strikes on a turbine engine production facility in Qom Province, which produces unmanned aircraft and aircraft components for the IRGC.",   sources:[{n:"US CENTCOM",u:"https://www.centcom.mil/"},{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/3/23/unprecedented-israel-us-carry-out-extensive-strikes-across-iran"}]},
+  {id:"e14",date:"2026-03-23",loc:"克尔曼",loc_en:"Kerman",lat:30.28,lng:57.08,cat:"airstrike",attacker:"美国/以色列",attacker_en:"US/Israel",   target:"军事目标",target_en:"Military targets",fatalities:null,   desc:"克尔曼遭受打击，该市是伊朗东南部重镇，靠近军事基地。",desc_en:"Kerman was struck. The city is an important city in southeastern Iran, located near military bases.",   sources:[{n:"ACLED",u:"https://acleddata.com/iran-crisis-live"}]},
+  {id:"e15",date:"2026-03-23",loc:"阿拉克",loc_en:"Arak",lat:34.09,lng:49.69,cat:"nuclear",attacker:"以色列",attacker_en:"Israel",   target:"阿拉克重水反应堆设施",target_en:"Arak heavy water reactor facility",fatalities:null,   desc:"阿拉克遭到打击。该市拥有伊朗重水反应堆，是关键核设施之一。",desc_en:"Arak was struck. The city has Iran's heavy water reactor, one of the critical nuclear facilities.",   sources:[{n:"Alma Center",u:"https://israel-alma.org/daily-report-the-second-iran-war-march-23-2026-1800/"}]},
+  {id:"e16",date:"2026-03-23",loc:"班达尔伦格",loc_en:"Bandar Lengeh",lat:26.56,lng:54.88,cat:"airstrike",attacker:"美国",attacker_en:"US",   target:"港口/军事设施",target_en:"Port/military facilities",fatalities:null,   desc:"波斯湾南部班达尔伦格港遭到打击，该港口具有军事和民用双重用途。",desc_en:"Bandar Lengeh port in the southern Persian Gulf was struck. The port has both military and civilian dual-use purposes.",   sources:[{n:"ACLED",u:"https://acleddata.com/iran-crisis-live"}]},
+  {id:"e17",date:"2026-03-22",loc:"伊朗→以色列",loc_en:"Iran→Israel",lat:32.06,lng:34.78,cat:"missile",attacker:"伊朗(反击)",attacker_en:"Iran (counterattack)",   target:"特拉维夫/南部以色列/耶路撒冷",target_en:"Tel Aviv/Southern Israel/Jerusalem",fatalities:18,   desc:"伊朗对以色列发动8波弹道导弹攻击，使用集束弹头。50%瞄准特拉维夫地区，37.5%瞄准南部，12.5%瞄准耶路撒冷。以色列18名平民死亡、4713+人受伤。里雄莱锡安一所幼儿园被击中。",desc_en:"Iran launched 8 waves of ballistic missile attacks against Israel using cluster warheads. 50% targeted the Tel Aviv area, 37.5% the south, and 12.5% Jerusalem. 18 Israeli civilians killed, 4,713+ wounded. A kindergarten in Rishon LeZion was hit.",   sources:[{n:"Alma Center Daily Report",u:"https://israel-alma.org/daily-report-the-second-iran-war-march-23-2026-1800/"}]}
+];
+
+const catColors = {airstrike:'#2563eb',missile:'#dc2626',nuclear:'#059669',civilian:'#ea580c'};
+const catNames = {airstrike:'空袭',missile:'导弹',nuclear:'核设施',civilian:'平民伤亡'};
+
+// ======================== GAZA EVENTS ========================
+const gazaEvents = [
+  {id:"g01",date:"2026-01-06",loc:"贾巴利亚难民营",loc_en:"Jabalia Camp",lat:31.54,lng:34.25,cat:"ground_op",target:"UNRWA学校（4所被拆除）",target_en:"UNRWA schools (4 demolished)",fatalities:null,desc:"以军使用爆炸装置和推土机拆除贾巴利亚4所UNRWA学校,1月18日又摧毁3所。",desc_en:"IDF demolished 4 UNRWA schools in Jabalia using explosives and bulldozers; destroyed 3 additional schools on January 18.",sources:[{n:"UNRWA Report #206",u:"https://www.unrwa.org/"},{n:"EuroMed Monitor",u:"https://euromedmonitor.org/"}]},
+  {id:"g02",date:"2026-01-08",loc:"汗尤尼斯·马瓦西",loc_en:"Khan Younis Al-Mawasi",lat:31.32,lng:34.27,cat:"airstrike",target:"流离失所者帐篷",target_en:"Displaced persons' tents",fatalities:4,desc:"以军无人机打击汗尤尼斯马瓦西地区5号街道一处帐篷,造成4名平民死亡,包括3名儿童。",desc_en:"IDF drone struck a tent in street 5, Khan Younis Al-Mawasi area, killing 4 civilians including 3 children.",sources:[{n:"Xinhua",u:"https://english.news.cn/"}]},
+  {id:"g03",date:"2026-01-14",loc:"加沙地带",loc_en:"Gaza Strip",lat:31.42,lng:34.36,cat:"ceasefire",target:"过渡治理框架",target_en:"Transitional governance framework",fatalities:null,desc:"美国宣布加沙计划第二阶段：成立加沙国家管理委员会(NCAG),由前巴勒斯坦部长阿里·沙阿斯领导,'和平委员会'提供国际监督。",desc_en:"US announces second phase of Gaza plan: establishment of National Committee for Gaza Administration (NCAG) led by former Palestinian minister Ali Shaa's, with international oversight from 'Peace Committee'.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/1/14/trump-envoy-announces-launch-of-second-phase-of-gaza-plan"},{n:"White House",u:"https://www.whitehouse.gov/"}]},
+  {id:"g04",date:"2026-01-25",loc:"贾巴利亚卫生中心",loc_en:"Jabalia Health Centre",lat:31.54,lng:34.24,cat:"airstrike",target:"UNRWA卫生中心",target_en:"UNRWA health center",fatalities:null,desc:"以军坦克炮击直接命中贾巴利亚UNRWA卫生中心,造成严重损坏。",desc_en:"IDF tank artillery directly struck Jabalia UNRWA health center, causing severe damage.",sources:[{n:"UNRWA Report #207",u:"https://www.unrwa.org/"}]},
+  {id:"g05",date:"2026-01-26",loc:"加沙城谢贾伊亚",loc_en:"Shejaia, Gaza City",lat:31.54,lng:34.34,cat:"ceasefire",target:"最后一名以色列人质遗体",target_en:"Final Israeli hostage remains",fatalities:null,desc:"以军在谢贾伊亚巴泰什公墓挖掘约250具巴勒斯坦遗体后,找到最后一名人质兰·格维利遗体,标志人质危机结束。",desc_en:"IDF found remains of final hostage Lana Groveily in Shejaia after exhuming approximately 250 Palestinian bodies from Batash cemetery; marked end of hostage crisis.",sources:[{n:"Times of Israel",u:"https://www.timesofisrael.com/"},{n:"Jerusalem Post",u:"https://www.jpost.com/"}]},
+  {id:"g06",date:"2026-01-31",loc:"加沙城雷马尔区",loc_en:"Remal, Gaza City",lat:31.52,lng:34.44,cat:"airstrike",target:"居民公寓楼",target_en:"Residential apartment building",fatalities:5,desc:"以军空袭加沙城雷马尔区一栋公寓楼,至少5名巴勒斯坦人死亡,包括3名儿童。",desc_en:"IDF airstrike on residential building in Remal, Gaza City, killing at least 5 Palestinians including 3 children.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/1/31/israeli-forces-kill-12-palestinians-across-gaza-attacks-reported-in-rafah"}]},
+  {id:"g07",date:"2026-01-31",loc:"拉法东部",loc_en:"Eastern Rafah",lat:31.29,lng:34.27,cat:"ground_op",target:"隧道出口/武装人员",target_en:"Tunnel exit / armed personnel",fatalities:32,desc:"以军回应8名武装人员从隧道出现的停火违规行为,在报复性打击波中造成28-32名巴勒斯坦人死亡。",desc_en:"IDF responded to ceasefire violation as 8 armed personnel emerged from tunnel; retaliatory strikes killed 28-32 Palestinians.",sources:[{n:"Times of Israel",u:"https://www.timesofisrael.com/"}]},
+  {id:"g08",date:"2026-02-02",loc:"拉法口岸",loc_en:"Rafah Crossing",lat:31.28,lng:34.27,cat:"humanitarian",target:"口岸短暂重开",target_en:"Crossing temporarily reopened",fatalities:null,desc:"拉法口岸短暂重新开放,允许巴勒斯坦人出入,但2月28日因伊朗战争爆发再次关闭。",desc_en:"Rafah crossing temporarily reopened allowing Palestinian passage, but re-closed on February 28 after Iran conflict escalation.",sources:[{n:"Truthout",u:"https://truthout.org/"}]},
+  {id:"g09",date:"2026-02-10",loc:"代尔巴拉赫",loc_en:"Deir al-Balah",lat:31.41,lng:34.35,cat:"airstrike",target:"UNRWA工作人员/平民",target_en:"UNRWA staff / civilians",fatalities:2,desc:"一名UNRWA工作人员在代尔巴拉赫东部街道步行时遭空袭身亡,另有2名平民在骑电动车时被杀。",desc_en:"UNRWA worker killed in airstrike while walking in eastern Deir al-Balah; 2 additional civilians killed while riding electric motorcycles.",sources:[{n:"UN News",u:"https://news.un.org/"},{n:"PressTV",u:"https://www.presstv.ir/"}]},
+  {id:"g10",date:"2026-02-27",loc:"布雷杰/汗尤尼斯",loc_en:"Bureij/Khan Younis",lat:31.41,lng:34.35,cat:"airstrike",target:"警察站",target_en:"Police stations",fatalities:6,desc:"以军无人机打击布雷杰难民营和马瓦西两处警察站,至少6人死亡。纳赛尔医疗中心接收4具遗体。",desc_en:"IDF drone strikes on police stations in Bureij refugee camp and Al-Mawasi; 6 killed. Nasser Medical Center received 4 bodies.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/2/27/israeli-attacks-on-police-sites-kill-five-in-southern-central-gaza"}]},
+  {id:"g11",date:"2026-02-28",loc:"全部口岸",loc_en:"All Crossings",lat:31.35,lng:34.31,cat:"humanitarian",target:"口岸全部关闭",target_en:"All crossings closed",fatalities:null,desc:"以色列因打击伊朗关闭加沙所有口岸,停止人道主义准入和医疗撤离。每日仅200辆卡车进入(需600辆),18000人等待医疗撤离。",desc_en:"Israel closed all Gaza crossings in response to Iran strikes; halted humanitarian access and medical evacuations. Only 200 trucks daily (need 600); 18,000 await medical evacuation.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/3/1/israel-closes-gazas-rafah-crossing-amid-attacks-on-iran"}]},
+  {id:"g12",date:"2026-03-07",loc:"约旦河西岸",loc_en:"West Bank",lat:32.00,lng:35.20,cat:"escalation",target:"定居者暴力",target_en:"Settler violence",fatalities:3,desc:"以色列定居者射杀3名巴勒斯坦人,2026年定居者暴力致6人死亡,2月28日至3月8日间定居者违规增加25%。",desc_en:"Israeli settlers shot and killed 3 Palestinians; settler violence deaths in 2026 totaled 6; settler violations increased 25% between Feb 28-Mar 8.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/"},{n:"UN News",u:"https://news.un.org/"}]},
+  {id:"g13",date:"2026-03-15",loc:"塔姆恩",loc_en:"Tammun, West Bank",lat:32.18,lng:35.40,cat:"escalation",target:"家庭轿车",target_en:"Family automobile",fatalities:4,desc:"以军向一辆家庭轿车开火,造成父亲(37岁)、母亲(35岁)和两个儿子(5岁、7岁)全部死亡。家庭正在购买开斋节用品。另两名儿童受伤。",desc_en:"IDF fired on family vehicle, killing father (37), mother (35), and two sons (5,7); family was shopping for Ramadan supplies. Two other children wounded.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/3/15/we-killed-dogs-israeli-troops-kill-two-children-parents-in-west-bank"},{n:"NPR",u:"https://www.npr.org/"}]},
+  {id:"g14",date:"2026-03-18",loc:"加沙地带",loc_en:"Gaza Strip",lat:31.45,lng:34.40,cat:"ceasefire",target:"停火协议崩溃",target_en:"Ceasefire agreement collapse",fatalities:null,desc:"2025年10月停火协议正式破裂。以色列2073次违反停火:750次射击平民、973次轰炸、263次财产拆除。累计死亡达72253人。",desc_en:"October 2025 ceasefire formally collapsed. Israel recorded 2,073 violations: 750 civilian shootings, 973 bombings, 263 property demolitions. Cumulative deaths reached 72,253.",sources:[{n:"UN Report",u:"https://press.un.org/en/2026/sc16284.doc.htm"}]},
+  {id:"g15",date:"2026-03-22",loc:"努塞拉特难民营",loc_en:"Nuseirat Camp",lat:31.41,lng:34.38,cat:"airstrike",target:"警车",target_en:"Police vehicle",fatalities:3,desc:"以军空袭努塞拉特难民营一辆警车,3名巴勒斯坦人死亡(含2名警察),10人受伤。北加沙另有1人被杀。",desc_en:"IDF airstrike on police vehicle in Nuseirat refugee camp killing 3 Palestinians (including 2 police officers); 10 wounded. 1 additional killed in North Gaza.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/3/22/israeli-air-strikes-on-gaza-kill-four-palestinians"},{n:"Anadolu",u:"https://www.aa.com.tr/"}]}
+];
+const gazaCatColors = {airstrike:'#dc2626',ground_op:'#d97706',ceasefire:'#2563eb',humanitarian:'#059669',escalation:'#7c3aed'};
+const gazaCatNames = {airstrike:'空袭',ground_op:'地面行动',ceasefire:'停火/谈判',humanitarian:'人道危机',escalation:'区域升级'};
+
+// ======================== SUDAN EVENTS ========================
+const sudanEvents = [
+  {id:"s01",date:"2026-01-10",loc:"乌姆库拉",loc_en:"Um al-Qura, Gezira",lat:14.20,lng:33.40,cat:"saf_advance",target:"乌姆库拉",target_en:"Um al-Qura",fatalities:null,desc:"SAF收复乌姆库拉,苏丹盾牌部队占领瓦德艾比亚德。",desc_en:"SAF retook Um al-Qura; Sudanese Shield Forces captured Wadi Abi'yad.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/1/12/the-sudanese-army-is-renewing-a-military-effort-to-retake-kordofan-darfur"}]},
+  {id:"s02",date:"2026-01-11",loc:"瓦德麦迪尼",loc_en:"Wad Madani, Gezira",lat:14.40,lng:33.50,cat:"saf_advance",target:"瓦德麦迪尼市",target_en:"Wad Madani city",fatalities:null,desc:"SAF从三个方向收复杰济拉州首府瓦德麦迪尼。",desc_en:"SAF retook Wad Madani, capital of Gezira State, from three directions.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/1/11/sudan-announces-governments-return-to-khartoum-from-wartime-capital"}]},
+  {id:"s03",date:"2026-01-11",loc:"喀土穆",loc_en:"Khartoum",lat:15.50,lng:32.50,cat:"saf_advance",target:"政府回迁喀土穆",target_en:"Government relocation to Khartoum",fatalities:null,desc:"总理卡米尔·伊德里斯宣布政府从港口苏丹返回喀土穆,开始恢复战争摧毁的城市服务。",desc_en:"Prime Minister Kamel Idris announced government return from Port Sudan to Khartoum, beginning restoration of war-damaged city services.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/1/11/sudan-announces-governments-return-to-khartoum-from-wartime-capital"}]},
+  {id:"s04",date:"2026-01-30",loc:"埃尔欧贝德",loc_en:"El Obeid, N. Kordofan",lat:13.20,lng:30.70,cat:"rsf_attack",target:"政府建筑/立法委/警察设施",target_en:"Government buildings / legislative committee / police facilities",fatalities:null,desc:"RSF约20架无人机轰炸北科尔多凡州首都,目标包括立法委员会和警察设施。",desc_en:"RSF approximately 20 drones bombed capital of North Kordofan State, targeting legislative committee and police facilities.",sources:[{n:"Sudan Tribune",u:"https://sudantribune.com/article/310055"},{n:"Darfur24",u:"https://www.darfur24.com/"}]},
+  {id:"s05",date:"2026-02-07",loc:"南科尔多凡",loc_en:"South Kordofan",lat:11.00,lng:31.00,cat:"rsf_attack",target:"平民区域",target_en:"Civilian areas",fatalities:24,desc:"RSF无人机在北科尔多凡造成至少24人死亡,包括8名儿童。",desc_en:"RSF drone attacks in North Kordofan killed at least 24 people including 8 children.",sources:[{n:"UN News",u:"https://news.un.org/en/story/2026/03/1167142"}]},
+  {id:"s06",date:"2026-02-01",loc:"恩杜尔曼",loc_en:"Omdurman",lat:15.60,lng:32.40,cat:"civilian",target:"恩杜尔曼市场",target_en:"Omdurman market",fatalities:54,desc:"RSF炮击恩杜尔曼市场,造成54人死亡、100多人受伤。",desc_en:"RSF artillery shelling of Omdurman market killed 54, wounded over 100.",sources:[{n:"ACLED",u:"https://acleddata.com/brief/fact-sheet-conflict-surges-sudan"}]},
+  {id:"s07",date:"2026-02-15",loc:"法希尔",loc_en:"El Fasher, N. Darfur",lat:13.60,lng:25.40,cat:"civilian",target:"非阿拉伯社区",target_en:"Non-Arab communities",fatalities:6000,desc:"联合国报告记录RSF接管后3天内6000人死亡,目标为扎格哈瓦和富尔社区,被认定具有种族灭绝特征。",desc_en:"UN documented 6,000 deaths within 3 days of RSF takeover targeting Zaghawa and Fur communities, characterized as genocidal.",sources:[{n:"UN News",u:"https://news.un.org/en/story/2026/02/1166997"},{n:"OHCHR",u:"https://www.ohchr.org/"}]},
+  {id:"s08",date:"2026-03-03",loc:"巴赫里/喀土穆",loc_en:"Bahri/Khartoum",lat:15.60,lng:32.50,cat:"saf_advance",target:"巴赫里全面控制",target_en:"Full control of Bahri",fatalities:null,desc:"SAF及盟军3月3日完全控制巴赫里,随后完全控制喀土穆市。",desc_en:"SAF and allied forces achieved complete control of Bahri on March 3, then complete control of Khartoum city.",sources:[{n:"HRW",u:"https://www.hrw.org/world-report/2026/country-chapters/sudan"}]},
+  {id:"s09",date:"2026-03-06",loc:"巴拉",loc_en:"Bara, N. Kordofan",lat:14.00,lng:31.50,cat:"saf_advance",target:"北科尔多凡第二大城市",target_en:"North Kordofan's second-largest city",fatalities:null,desc:"SAF收复巴拉市,确保埃尔欧贝德安全。",desc_en:"SAF retook Bara city, securing El Obeid.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/news/2026/3/6/sudanese-army-retakes-bara-secures-el-obeid-in-north-kordofan"}]},
+  {id:"s10",date:"2026-03-16",loc:"巴拉",loc_en:"Bara, N. Kordofan",lat:14.00,lng:31.50,cat:"rsf_attack",target:"巴拉市",target_en:"Bara city",fatalities:null,desc:"RSF仅10天后黎明突击夺回巴拉市,部署数十辆战车、无人机和炮兵。SAF被迫撤退。",desc_en:"RSF launched dawn assault retaking Bara just 10 days later, deploying dozens of tanks, drones, and artillery. SAF forced to withdraw.",sources:[{n:"Sudan Tribune",u:"https://sudantribune.com/article/311812"},{n:"Dabanga",u:"https://www.dabangasudan.org/"}]},
+  {id:"s11",date:"2026-03-16",loc:"迪林",loc_en:"Dilling, S. Kordofan",lat:10.80,lng:30.80,cat:"rsf_attack",target:"迪林市",target_en:"Dilling city",fatalities:39,desc:"RSF和SPLM-N从三个方向攻击迪林,SAF击退但重炮造成至少39名平民死亡。",desc_en:"RSF and SPLM-N attacked Dilling from three directions; SAF repelled attack but heavy artillery killed at least 39 civilians.",sources:[{n:"Sudan Tribune",u:"https://sudantribune.com/article/311239"},{n:"Darfur24",u:"https://www.darfur24.com/"}]},
+  {id:"s12",date:"2026-03-21",loc:"达因",loc_en:"Al-Daein, E. Darfur",lat:12.80,lng:27.60,cat:"civilian",target:"达因教学医院",target_en:"Al-Daein Teaching Hospital",fatalities:64,desc:"对达因教学医院的攻击造成64人死亡,包括13名儿童。医疗设施袭击累计213次、2036人死亡。",desc_en:"Attack on Al-Daein Teaching Hospital killed 64 including 13 children. Medical facility attacks cumulative: 213 incidents, 2,036 deaths.",sources:[{n:"WHO/Al Jazeera",u:"https://www.aljazeera.com/news/2026/3/21/who-says-attack-on-sudan-hospital-killed-64-including-13-children"}]},
+  {id:"s13",date:"2026-03-15",loc:"尼亚拉",loc_en:"Nyala, S. Darfur",lat:12.00,lng:24.90,cat:"civilian",target:"尼亚拉市场",target_en:"Nyala market",fatalities:11,desc:"SAF无人机攻击尼亚拉市场,11人死亡、20人受伤。",desc_en:"SAF drone attack on Nyala market killed 11, wounded 20.",sources:[{n:"UN News",u:"https://news.un.org/en/story/2026/03/1167142"}]},
+  {id:"s14",date:"2026-03-01",loc:"喀土穆北部",loc_en:"Northern Khartoum",lat:15.70,lng:32.30,cat:"civilian",target:"RSF秘密基地/万人坑",target_en:"RSF secret base / mass grave",fatalities:500,desc:"SAF收复喀土穆后发现RSF秘密基地附近约500人的集体坟墓,以及酷刑和饥饿证据。",desc_en:"SAF discovered approximately 500-person mass grave near RSF secret base in northern Khartoum after retaking, evidence of torture and starvation.",sources:[{n:"ICTJ",u:"https://www.ictj.org/"}]},
+  {id:"s15",date:"2026-01-01",loc:"北达尔富尔",loc_en:"North Darfur",lat:13.50,lng:25.00,cat:"humanitarian",target:"乌姆巴鲁/科诺伊",target_en:"Um Barru / Konoi",fatalities:null,desc:"北达尔富尔两个新地区(乌姆巴鲁和科诺伊)超过饥荒阈值(IPC第5阶段),20多个地方面临饥荒风险。全国3040万人需援助。",desc_en:"Two new areas in North Darfur (Um Barru and Konoi) exceeded famine threshold (IPC Stage 5); 20+ localities face famine risk. 30.4 million nationally need aid.",sources:[{n:"Action Against Hunger",u:"https://www.actionagainsthunger.org/"}]}
+];
+const sudanCatColors = {saf_advance:'#2563eb',rsf_attack:'#dc2626',civilian:'#ea580c',humanitarian:'#059669',foreign:'#8b5cf6'};
+const sudanCatNames = {saf_advance:'SAF推进',rsf_attack:'RSF进攻',civilian:'平民伤亡',humanitarian:'人道危机',foreign:'外部干预'};
+
+// ======================== YEMEN EVENTS ========================
+const yemenEvents = [
+  {id:"y01",date:"2026-01-03",loc:"赛永",loc_en:"Seiyun, Hadramout",lat:15.95,lng:48.77,cat:"ground",target:"赛永市",target_en:"Seiyun city",fatalities:20,desc:"政府军在沙特空袭支援下从STC手中夺取赛永,至少20名STC战士死亡。",desc_en:"Government forces took Seiyun from STC with Saudi air support; at least 20 STC fighters killed.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/"}]},
+  {id:"y02",date:"2026-01-04",loc:"穆卡拉",loc_en:"Mukalla, Hadramout",lat:16.27,lng:49.15,cat:"ground",target:"穆卡拉港口城市",target_en:"Mukalla port city",fatalities:null,desc:"亲沙特军队确保穆卡拉所有军事和民用设施安全。",desc_en:"Saudi-backed forces secured all military and civilian facilities in Mukalla.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/"}]},
+  {id:"y03",date:"2026-01-07",loc:"亚丁",loc_en:"Aden",lat:12.83,lng:45.30,cat:"ground",target:"亚丁机场/总统府",target_en:"Aden Airport / Presidential Palace",fatalities:null,desc:"沙特支持的政府军夺取亚丁机场和总统府,STC领导人祖拜迪逃往索马里兰。",desc_en:"Saudi-backed government forces captured Aden airport and presidential palace; STC leader Zubaidi fled to Somaliland.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/"}]},
+  {id:"y04",date:"2026-02-28",loc:"曼德海峡",loc_en:"Bab el-Mandeb",lat:13.50,lng:43.00,cat:"shipping",target:"红海航运威胁升级",target_en:"Red Sea shipping threat escalation",fatalities:null,desc:"胡塞武装威胁升级红海攻击并可能封锁曼德海峡,回应美以打击伊朗。",desc_en:"Houthis threatened escalated Red Sea attacks and possible Bab el-Mandeb closure in response to US-Israel strikes on Iran.",sources:[{n:"CGTN",u:"https://www.cgtn.com/"},{n:"The National",u:"https://www.thenationalnews.com/"}]},
+  {id:"y05",date:"2026-03-03",loc:"吉达",loc_en:"Jeddah, Saudi Arabia",lat:21.54,lng:39.17,cat:"houthi_attack",target:"吉达石油储罐",target_en:"Jeddah oil storage tanks",fatalities:null,desc:"胡塞发射圣城-2巡航导弹打击吉达石油储罐(据报被拦截)。",desc_en:"Houthis launched Quds-2 cruise missile targeting Jeddah oil storage tanks (reported intercepted).",sources:[{n:"ACLED",u:"https://acleddata.com/"}]},
+  {id:"y06",date:"2026-03-06",loc:"亚丁湾",loc_en:"Gulf of Aden",lat:12.40,lng:45.00,cat:"shipping",target:"MV True Confidence散货船",target_en:"MV True Confidence general cargo ship",fatalities:3,desc:"胡塞反舰导弹击中巴巴多斯籍散货船,引发大火导致3名船员死亡、4人严重烧伤。这是胡塞运动首次确认造成平民伤亡。印度海军救援21名船员。",desc_en:"Houthi anti-ship missile struck Barbados-flagged cargo ship, causing fire killing 3 crew, 4 seriously burned. First confirmed Houthi civilian casualty. Indian Navy rescued 21 crew.",sources:[{n:"Foreign Policy",u:"https://foreignpolicy.com/"},{n:"Al Jazeera",u:"https://www.aljazeera.com/"}]},
+  {id:"y07",date:"2026-03-07",loc:"拉斯坦努拉",loc_en:"Ras Tanura, Saudi Arabia",lat:26.64,lng:50.20,cat:"houthi_attack",target:"全球最大石油装载设施",target_en:"World's largest oil loading facility",fatalities:null,desc:"胡塞无人机打击拉斯坦努拉(全球最大石油装载设施)。国际油价升破70美元/桶。",desc_en:"Houthi drones attacked Ras Tanura, world's largest oil loading facility. International oil prices broke through $70/barrel.",sources:[{n:"ACLED",u:"https://acleddata.com/"},{n:"CSIS",u:"https://www.csis.org/"}]},
+  {id:"y08",date:"2026-03-08",loc:"红海/亚丁湾",loc_en:"Gulf of Aden",lat:13.50,lng:46.00,cat:"shipping",target:"MV Propel Fortune/美军军舰",target_en:"MV Propel Fortune / US military ships",fatalities:null,desc:"胡塞大规模攻击美军军舰和商业船舶,向新加坡籍散货船MV Propel Fortune发射两枚反舰导弹。",desc_en:"Houthis conducted large-scale attack on US military ships and commercial vessels, firing two anti-ship missiles at Singapore-flagged cargo ship MV Propel Fortune.",sources:[{n:"Wilson Center",u:"https://www.wilsoncenter.org/"},{n:"ACLED",u:"https://acleddata.com/"}]},
+  {id:"y09",date:"2026-03-09",loc:"延布",loc_en:"Yanbu, Saudi Arabia",lat:24.13,lng:38.27,cat:"houthi_attack",target:"延布石油设施",target_en:"Yanbu oil facilities",fatalities:null,desc:"胡塞向延布石油设施发射2枚布尔坎-2导弹(据报被拦截)。",desc_en:"Houthis fired 2 Burkan-2 missiles at Yanbu oil facilities (reported intercepted).",sources:[{n:"ACLED",u:"https://acleddata.com/"}]},
+  {id:"y10",date:"2026-03-15",loc:"萨那/荷台达/马里卜",loc_en:"Multiple Yemen",lat:15.50,lng:48.50,cat:"ground",target:"军事动员集结",target_en:"Military mobilization assembly",fatalities:null,desc:"胡塞在西海岸、塔伊兹和马里卜前线部署军事增援,部落集会宣布'全面动员'。领导人阿卜杜勒-马利克·胡塞称'扣在扳机上'。",desc_en:"Houthis deployed military reinforcements on western coast, Taiz, and Marib frontlines; tribal assemblies announced 'full mobilization.' Leader Abdulmalik Houthi stated 'finger on trigger'.",sources:[{n:"Stimson Center",u:"https://www.stimson.org/"},{n:"ACLED",u:"https://acleddata.com/"}]},
+  {id:"y11",date:"2026-03-26",loc:"利雅得",loc_en:"Riyadh, Saudi Arabia",lat:24.76,lng:46.68,cat:"houthi_attack",target:"利雅得市区",target_en:"Riyadh city",fatalities:1,desc:"胡塞向利雅得发射7枚导弹,全部被沙特防空拦截。1人死亡、2人受伤。",desc_en:"Houthis fired 7 missiles at Riyadh, all intercepted by Saudi air defenses. 1 killed, 2 wounded.",sources:[{n:"Times of Israel",u:"https://www.timesofisrael.com/"}]},
+  {id:"y12",date:"2026-01-15",loc:"也门全境",loc_en:"All Yemen",lat:15.40,lng:44.20,cat:"humanitarian",target:"人道危机",target_en:"Humanitarian crisis",fatalities:null,desc:"联合国呼吁21.6亿美元援助。2200万人需要援助,1830万人面临严重粮食不安全。40%医疗设施瘫痪或面临风险。",desc_en:"UN appeals for $2.16 billion in aid. 22 million need assistance; 18.3 million face acute food insecurity. 40% of medical facilities inoperative or at risk.",sources:[{n:"OCHA",u:"https://www.unocha.org/"},{n:"UNHCR",u:"https://www.unhcr.org/"}]}
+];
+const yemenCatColors = {houthi_attack:'#dc2626',us_strike:'#2563eb',shipping:'#d97706',ground:'#059669',humanitarian:'#8b5cf6'};
+const yemenCatNames = {houthi_attack:'胡塞攻击',us_strike:'美军打击',shipping:'红海航运',ground:'地面冲突',humanitarian:'人道危机'};
+
+// ======================== MYANMAR EVENTS ========================
+const myanmarEvents = [
+  {id:"m01",date:"2026-01-14",loc:"八莫",loc_en:"Bhamo, Kachin",lat:24.76,lng:97.48,cat:"resistance",target:"军政府哨所(20人投降)",target_en:"Junta checkpoint (20 soldiers surrendered)",fatalities:null,desc:"克钦独立军攻占八莫一处军政府哨所,20名士兵投降,标志着克钦邦第二大城市争夺的重大进展。",desc_en:"KIA captured a junta checkpoint in Bhamo with 20 soldiers surrendering, marking major progress in the struggle for control of Kachin State's second-largest city.",sources:[{n:"Burma News International",u:"https://www.bnionline.net/"},{n:"MOEMAKA",u:"https://moemaka.net/"}]},
+  {id:"m02",date:"2026-01-14",loc:"实兑",loc_en:"Sittwe, Rakhine",lat:16.32,lng:93.21,cat:"ethnic",target:"若开邦首府",target_en:"Rakhine State capital",fatalities:null,desc:"48-50名军政府士兵和警察逃离岗位,若开军推进至距实兑市中心仅2公里。",desc_en:"48-50 junta soldiers and police abandoned their posts; the Arakan Army advanced to within 2 kilometers of Sittwe city center.",sources:[{n:"Mizzima",u:"https://eng.mizzima.com/"},{n:"Irrawaddy",u:"https://www.irrawaddy.com/"}]},
+  {id:"m03",date:"2026-01-22",loc:"八莫",loc_en:"Bhamo, Kachin",lat:24.76,lng:97.48,cat:"junta_strike",target:"平民区域",target_en:"Civilian area",fatalities:50,desc:"军政府对八莫人口密集区空袭,造成多达50名平民死亡,无战斗人员在场。",desc_en:"Junta airstrikes on densely populated Bhamo resulted in up to 50 civilian deaths with no combatants present.",sources:[{n:"HRW",u:"https://www.hrw.org/world-report/2026/country-chapters/myanmar"}]},
+  {id:"m04",date:"2026-01-31",loc:"实皆省",loc_en:"Sagaing Region",lat:23.50,lng:95.80,cat:"junta_strike",target:"IDP营地",target_en:"IDP camp",fatalities:11,desc:"军政府空袭实皆省Koke Ko村IDP营地,11名平民死亡,包括孕妇和3名儿童。",desc_en:"Junta airstrikes on an IDP camp in Koke Ko village resulted in 11 civilian deaths, including a pregnant woman and 3 children.",sources:[{n:"UN News",u:"https://news.un.org/en/story/2026/01/1166866"}]},
+  {id:"m05",date:"2026-02-15",loc:"贵概",loc_en:"Kutkai, N. Shan",lat:23.31,lng:97.62,cat:"ethnic",target:"贵概镇(MNDAA vs TNLA)",target_en:"Kutkai town (MNDAA vs TNLA)",fatalities:null,desc:"缅甸民族民主同盟军(果敢)攻占贵概,迫使德昂民族解放军撤离。兄弟联盟分裂。",desc_en:"The Myanmar National Democratic Alliance Army (Kokang faction) captured Kutkai, forcing the Shan State Progressive Party (TNLA) to withdraw. The Brotherhood Alliance fractured.",sources:[{n:"Irrawaddy",u:"https://www.irrawaddy.com/"},{n:"Mizzima",u:"https://eng.mizzima.com/"}]},
+  {id:"m06",date:"2026-03-01",loc:"卡塔",loc_en:"Katha, Sagaing",lat:23.50,lng:95.95,cat:"resistance",target:"伊洛瓦底江畔战略重镇",target_en:"Strategic town on Irrawaddy River",fatalities:null,desc:"KIA-PDF联合部队进入卡塔,协调行动包括KIA、ABSDF和NUG部队,攻占这座伊洛瓦底江畔战略城镇。",desc_en:"KIA-PDF combined forces entered Katha with coordinated operations by KIA, ABSDF, and NUG units, capturing this strategic town on the Irrawaddy River.",sources:[{n:"Irrawaddy",u:"https://www.irrawaddy.com/"}]},
+  {id:"m07",date:"2026-03-05",loc:"瑙昆雷平",loc_en:"Nyaunglebin, Bago",lat:17.50,lng:96.80,cat:"civilian",target:"平民(含18名儿童)",target_en:"Civilians (including 18 children)",fatalities:41,desc:"军政府第77轻步兵师使用空袭、无人机和重炮无差别攻击,至少41名平民死亡(含18名儿童和1名孕妇),300+平民被作为人体盾牌。",desc_en:"The junta's 77th Light Infantry Division conducted indiscriminate attacks using airstrikes, drones, and heavy artillery, killing at least 41 civilians (including 18 children and 1 pregnant woman), with 300+ civilians used as human shields.",sources:[{n:"Progressive Voice",u:"https://progressivevoicemyanmar.org/"}]},
+  {id:"m08",date:"2026-03-08",loc:"安镇",loc_en:"Ann Township, Rakhine",lat:16.75,lng:93.50,cat:"junta_strike",target:"若开军战俘营",target_en:"Arakan Army POW detention camp",fatalities:116,desc:"军政府空袭若开军战俘拘留营,造成116名战俘死亡(自己的士兵)、32人受伤。单次事件最高战俘死亡人数。",desc_en:"Junta airstrikes on an Arakan Army POW detention camp resulted in 116 POW deaths (its own soldiers) and 32 wounded—the highest POW casualty count in a single incident.",sources:[{n:"ACLED",u:"https://acleddata.com/"},{n:"Mizzima",u:"https://eng.mizzima.com/"}]},
+  {id:"m09",date:"2026-03-08",loc:"提贾因",loc_en:"Tigyaing, Sagaing",lat:24.20,lng:95.70,cat:"junta_strike",target:"村庄",target_en:"Villages",fatalities:10,desc:"连续三天空袭村庄,至少10名平民死亡、20+受伤,15000+平民逃离。",desc_en:"Three consecutive days of airstrikes on villages resulted in at least 10 civilian deaths and 20+ wounded, with 15,000+ civilians fleeing.",sources:[{n:"Myanmar Now",u:"https://myanmar-now.org/"},{n:"Irrawaddy",u:"https://www.irrawaddy.com/"}]},
+  {id:"m10",date:"2026-03-14",loc:"列潘拉村",loc_en:"Let Pan Hla, Mandalay",lat:22.00,lng:96.50,cat:"civilian",target:"拥挤市场",target_en:"Crowded marketplace",fatalities:27,desc:"军政府空袭曼德勒省列潘拉村拥挤市场,至少27名平民死亡,包括2岁幼儿。",desc_en:"Junta airstrikes on a crowded marketplace in Let Pan Hla village killed at least 27 civilians, including a 2-year-old child.",sources:[{n:"UN News",u:"https://news.un.org/en/story/2026/01/1166866"}]},
+  {id:"m11",date:"2026-03-16",loc:"南坎",loc_en:"Namhkam, N. Shan",lat:23.45,lng:97.55,cat:"battle",target:"12英里山战略要地",target_en:"12 Mile Hill strategic position",fatalities:null,desc:"MNDAA向南坎发起大规模攻势,使用重型无人机打击12英里山战略要地。南坎是该地区最后一个未被MNDAA控制的重要城镇。",desc_en:"MNDAA launched a major offensive on Namhkam using heavy drones to strike 12 Mile Hill. Namhkam is the last major town in the region not under MNDAA control.",sources:[{n:"Mizzima",u:"https://eng.mizzima.com/"}]},
+  {id:"m12",date:"2026-03-15",loc:"妙瓦底",loc_en:"Myawaddy, Karen",lat:16.68,lng:98.87,cat:"battle",target:"泰缅边境",target_en:"Thailand-Myanmar border",fatalities:null,desc:"军政府第22师与KNU第6旅在Min Let Pan村附近交战,9座泰国房屋被弹片损坏。泰国关闭湄索口岸7天,数千平民逃离。",desc_en:"Clashes between the junta's 22nd Division and KNU Brigade 6 near Min Let Pan village damaged 9 Thai houses with shrapnel. Thailand closed the Mae Sot border crossing for 7 days; thousands of civilians fled.",sources:[{n:"Irrawaddy",u:"https://www.irrawaddy.com/"},{n:"Myanmar Now",u:"https://myanmar-now.org/"}]}
+];
+const myanmarCatColors = {resistance:'#2563eb',junta_strike:'#dc2626',battle:'#d97706',ethnic:'#8b5cf6',civilian:'#ea580c'};
+const myanmarCatNames = {resistance:'抵抗军进攻',junta_strike:'军政府空袭',battle:'城镇争夺',ethnic:'民族武装',civilian:'平民伤亡'};
+
+// ======================== SYRIA EVENTS ========================
+const syriaEvents = [
+  {id:"sy01",date:"2024-12-01",loc:"阿勒颇",loc_en:"Aleppo",lat:36.20,lng:37.16,cat:"transition",target:"叙利亚第二大城市",target_en:"Syria's second-largest city",fatalities:null,desc:"反对派在'威慑侵略'行动中闪电式夺取阿勒颇,这是2016年政府重获控制后的首次沦陷。",desc_en:"Opposition forces rapidly captured Aleppo in the 'Deterring Aggression' operation, marking the city's first fall since government forces reacquired it in 2016.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/"},{n:"CNN",u:"https://www.cnn.com/"}]},
+  {id:"sy02",date:"2024-12-05",loc:"哈马",loc_en:"Hama",lat:34.73,lng:36.75,cat:"transition",target:"哈马市",target_en:"Hama city",fatalities:null,desc:"反对派继续南推夺取哈马,整个内战期间该市一直在政府手中,其陷落标志防线全面瓦解。",desc_en:"Opposition forces continued their southern advance and captured Hama, which remained in government hands throughout the civil war. Its fall marked the complete collapse of defensive lines.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/"},{n:"NPR",u:"https://www.npr.org/"}]},
+  {id:"sy03",date:"2024-12-07",loc:"霍姆斯",loc_en:"Homs",lat:34.73,lng:36.71,cat:"transition",target:"霍姆斯(战略枢纽)",target_en:"Homs (strategic hub)",fatalities:null,desc:"霍姆斯陷落切断拉塔基亚与叙利亚其他地区联系,对阿萨德政权造成致命打击。",desc_en:"Homs' fall severed Latakia's connections with the rest of Syria, delivering a fatal blow to Assad's regime.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/"},{n:"NBC",u:"https://www.nbcnews.com/"}]},
+  {id:"sy04",date:"2024-12-08",loc:"大马士革",loc_en:"Damascus",lat:33.51,lng:36.27,cat:"transition",target:"首都/阿萨德政权",target_en:"Capital/Assad regime",fatalities:null,desc:"11天闪电进攻后大马士革陷落,阿萨德逃往俄罗斯。同日HTS释放塞德纳亚监狱('人肉屠宰场')囚犯。",desc_en:"After an 11-day lightning offensive, Damascus fell and Assad fled to Russia. The same day, HTS released prisoners from Sednaya Prison (the 'human slaughterhouse').",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/"},{n:"CNN",u:"https://www.cnn.com/"}]},
+  {id:"sy05",date:"2024-12-09",loc:"拉塔基亚港",loc_en:"Latakia Port",lat:35.53,lng:35.76,cat:"israel_strike",target:"叙利亚海军(15艘舰艇)",target_en:"Syrian Navy (15 vessels)",fatalities:null,desc:"以色列海军导弹艇执行'巴山之矢'行动,摧毁15艘叙利亚海军舰艇,包括搭载努尔导弹和斯蒂克斯导弹的舰艇。",desc_en:"Israeli Navy missile boats executed Operation 'Arrow of Bashan,' destroying 15 Syrian Navy vessels including those armed with Nur and Styx missiles.",sources:[{n:"Times of Israel",u:"https://www.timesofisrael.com/"},{n:"JNS",u:"https://www.jns.org/"}]},
+  {id:"sy06",date:"2024-12-08",loc:"巴尔泽",loc_en:"Barzeh, Damascus",lat:33.58,lng:36.35,cat:"israel_strike",target:"化学武器储存设施",target_en:"Chemical weapons storage facility",fatalities:null,desc:"阿萨德倒台当日以色列空袭化学武器储存设施,摧毁芥子气和VX毒气库以及叙利亚科学研究中心。",desc_en:"On the day of Assad's fall, Israel struck chemical weapons storage facilities, destroying mustard gas and VX nerve agent stockpiles and Syria's Scientific Research Center.",sources:[{n:"FDD",u:"https://www.fdd.org/"},{n:"Bloomberg",u:"https://www.bloomberg.com/"}]},
+  {id:"sy07",date:"2024-12-06",loc:"曼比季",loc_en:"Manbij",lat:36.53,lng:37.23,cat:"turkey_op",target:"SDF控制区",target_en:"SDF-controlled area",fatalities:null,desc:"土耳其支持的叙利亚国民军'自由黎明'行动夺取曼比季,SDF在美国斡旋下撤离。曼比季自2016年以来由SDF控制。",desc_en:"Turkey-backed Syrian National Army captured Manbij in the 'Operation Dawn of Freedom,' with the SDF withdrawing under U.S. mediation. Manbij had been under SDF control since 2016.",sources:[{n:"FDD",u:"https://www.fdd.org/"},{n:"VOA",u:"https://www.voanews.com/"}]},
+  {id:"sy08",date:"2024-12-08",loc:"提什林大坝",loc_en:"Tishrin Dam",lat:36.48,lng:37.99,cat:"turkey_op",target:"幼发拉底河关键基础设施",target_en:"Critical Euphrates infrastructure",fatalities:null,desc:"土耳其支持的部队进攻提什林大坝,土耳其无人机空袭造成电力设施严重受损,41.3万居民断电。",desc_en:"Turkey-backed forces attacked Tishrin Dam; Turkish drone strikes caused severe damage to power infrastructure, leaving 413,000 residents without electricity.",sources:[{n:"CNN",u:"https://www.cnn.com/"},{n:"STJ",u:"https://stj-sy.org/"}]},
+  {id:"sy09",date:"2025-01-03",loc:"萨法拉",loc_en:"As-Safira, Aleppo",lat:36.08,lng:37.07,cat:"israel_strike",target:"防御工厂/科研中心",target_en:"Defense factory/research center",fatalities:null,desc:"以色列对阿勒颇省萨法拉防御工厂和科研中心发动多次空袭,至少7次爆炸摧毁雷达和导弹营。",desc_en:"Israel conducted multiple airstrikes on As-Safira defense factory and research center in Aleppo province; at least 7 explosions destroyed radar and missile batteries.",sources:[{n:"Times of Israel",u:"https://www.timesofisrael.com/"},{n:"New Arab",u:"https://www.newarab.com/"}]},
+  {id:"sy10",date:"2025-01-29",loc:"大马士革",loc_en:"Damascus",lat:33.51,lng:36.27,cat:"transition",target:"过渡总统任命",target_en:"Interim president appointment",fatalities:null,desc:"艾哈迈德·沙拉(前朱拉尼)在革命胜利大会上被任命为过渡期总统,承诺可能持续四年的政治过渡。",desc_en:"Ahmad al-Shara (formerly al-Jolani) was appointed interim president at the Revolutionary Victory Conference, pledging a possible four-year political transition.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/"},{n:"NBC",u:"https://www.nbcnews.com/"}]},
+  {id:"sy11",date:"2025-07-16",loc:"大马士革",loc_en:"Damascus",lat:33.51,lng:36.27,cat:"israel_strike",target:"军事总部/总统府",target_en:"Military HQ/presidential palace",fatalities:null,desc:"以色列轰炸叙利亚军事总部入口作为警告后,对总部建筑群进行猛烈空袭。7个月内以色列在叙累计988次空袭。",desc_en:"After bombing the Syrian military HQ entrance as a warning, Israel conducted intense airstrikes on the headquarters complex. Israel conducted 988 cumulative airstrikes in Syria in 7 months.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/"},{n:"ACLED",u:"https://acleddata.com/"}]},
+  {id:"sy12",date:"2026-01-13",loc:"拉卡/代尔祖尔",loc_en:"Raqqa/Deir ez-Zor",lat:35.95,lng:39.01,cat:"sdf",target:"SDF控制领土",target_en:"SDF-controlled territory",fatalities:null,desc:"过渡政府对SDF领土发动攻势,SDF同意从拉卡和代尔祖尔撤出。政府军夺取DAANES约80%领土。",desc_en:"The transition government launched an offensive on SDF territory; the SDF agreed to withdraw from Raqqa and Deir ez-Zor. Government forces captured approximately 80% of DAANES territory.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/"},{n:"CNN",u:"https://www.cnn.com/"}]}
+];
+const syriaCatColors = {transition:'#059669',israel_strike:'#2563eb',turkey_op:'#d97706',sdf:'#8b5cf6',isis:'#dc2626'};
+const syriaCatNames = {transition:'政权过渡',israel_strike:'以色列空袭',turkey_op:'土耳其行动',sdf:'库尔德SDF',isis:'ISIS残余'};
+
+// ======================== DRC EVENTS ========================
+const drcEvents = [
+  {id:"d01",date:"2025-01-21",loc:"米诺瓦",loc_en:"Minova, S. Kivu",lat:-2.38,lng:29.24,cat:"m23_advance",target:"米诺瓦港口城镇",target_en:"Minova port town",fatalities:null,desc:"M23夺取南基伍米诺瓦港,切断南方货物和军事补给流向戈马。",desc_en:"M23 captured Minova port in South Kivu, severing the flow of supplies and military equipment from the south to Goma.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/"},{n:"ACLED",u:"https://acleddata.com/"}]},
+  {id:"d02",date:"2025-01-23",loc:"萨克",loc_en:"Sake, N. Kivu",lat:-1.92,lng:29.09,cat:"m23_advance",target:"萨克镇",target_en:"Sake town",fatalities:null,desc:"M23在戈马包围战中夺取萨克,北基伍军事总督基里姆瓦米去世。",desc_en:"M23 captured Sake during the siege of Goma; North Kivu's military governor Kiremba Wami was killed.",sources:[{n:"Wikipedia",u:"https://en.wikipedia.org/wiki/M23_campaign_(2022%E2%80%93present)"}]},
+  {id:"d03",date:"2025-01-27",loc:"戈马",loc_en:"Goma, N. Kivu",lat:-1.68,lng:29.22,cat:"m23_advance",target:"北基伍首府",target_en:"North Kivu capital",fatalities:2000,desc:"M23在卢旺达军队支持下占领戈马,造成900-2000人死亡,标志冲突重大转折。",desc_en:"M23, backed by Rwandan forces, captured Goma, resulting in 900-2,000 deaths and marking a major turning point in the conflict.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/"},{n:"ACLED",u:"https://acleddata.com/"}]},
+  {id:"d04",date:"2026-01-15",loc:"乌维拉",loc_en:"Uvira, S. Kivu",lat:-3.41,lng:29.14,cat:"drc_defense",target:"乌维拉市",target_en:"Uvira city",fatalities:171,desc:"FARDC和韦扎伦多收复南基伍战略城市乌维拉。2月发现171具尸体。",desc_en:"FARDC and Wazalendo forces recaptured the strategic city of Uvira in South Kivu. 171 bodies were discovered in February.",sources:[{n:"Critical Threats",u:"https://www.criticalthreats.org/"},{n:"Al Jazeera",u:"https://www.aljazeera.com/"}]},
+  {id:"d05",date:"2026-02-24",loc:"鲁巴亚",loc_en:"Rubaya, N. Kivu",lat:-1.38,lng:29.36,cat:"drc_defense",target:"M23发言人恩戈玛",target_en:"M23 spokesman Ngoma",fatalities:10,desc:"刚果军队无人机黎明前空袭鲁巴亚矿区,击杀M23军事发言人威利·恩戈玛及9人。",desc_en:"DRC military conducted pre-dawn drone strikes on Rubaya mining area, killing M23 military spokesman Willy Ngoma and 9 others.",sources:[{n:"Africa Report",u:"https://www.theafricareport.com/"},{n:"Washington Post",u:"https://www.washingtonpost.com/"}]},
+  {id:"d06",date:"2026-02-26",loc:"米内姆韦",loc_en:"Minembwe, S. Kivu",lat:-3.99,lng:29.02,cat:"drc_defense",target:"Twirwaneho据点",target_en:"Twirwaneho stronghold",fatalities:null,desc:"刚果军队对南基伍高原Twirwaneho据点发动空地联合打击,无人机轰炸周边村庄,20万+平民逃离。",desc_en:"DRC military conducted joint air-ground strikes on the Twirwaneho stronghold on South Kivu plateau; drone bombardment of surrounding villages caused 200,000+ civilians to flee.",sources:[{n:"Critical Threats",u:"https://www.criticalthreats.org/"},{n:"Xinhua",u:"https://english.news.cn/"}]},
+  {id:"d07",date:"2026-03-03",loc:"基加利",loc_en:"Kigali, Rwanda",lat:-1.94,lng:29.87,cat:"foreign",target:"卢旺达国防军",target_en:"Rwanda Defense Force (RDF)",fatalities:null,desc:"美国对卢旺达国防军及4名高级官员实施制裁,指控直接军事支持M23,包括GPS干扰、防空装备和无人机。",desc_en:"The U.S. imposed sanctions on the Rwanda Defense Force and 4 senior officials, accusing them of direct military support to M23, including GPS jamming, air defense equipment, and drones.",sources:[{n:"US State Dept",u:"https://www.state.gov/"},{n:"Al Jazeera",u:"https://www.aljazeera.com/"}]},
+  {id:"d08",date:"2026-03-11",loc:"戈马",loc_en:"Goma, N. Kivu",lat:-1.68,lng:29.22,cat:"civilian",target:"联合国工作人员",target_en:"UN personnel",fatalities:1,desc:"无人机袭击造成联合国儿童基金会工作人员及其他人死亡,2026年第二起援助工作者伤亡事件。",desc_en:"Drone attack killed UNICEF worker and others; the second aid worker casualty incident in 2026.",sources:[{n:"Al Jazeera",u:"https://www.aljazeera.com/"},{n:"KT Press",u:"https://www.ktpress.rw/"}]},
+  {id:"d09",date:"2026-03-15",loc:"卡布纳姆博",loc_en:"Kabunambo, S. Kivu",lat:-3.56,lng:29.31,cat:"humanitarian",target:"里齐平原流离失所",target_en:"Ruzizi Plain displaced",fatalities:null,desc:"韦扎伦多战士切断平民通道后,卡布纳姆博及周边数千平民被迫逃离,造成大规模人道危机。",desc_en:"After Wazalendo fighters cut off civilian escape routes, thousands of civilians in Kabunambo and surrounding areas were forced to flee, causing a massive humanitarian crisis.",sources:[{n:"Critical Threats",u:"https://www.criticalthreats.org/"},{n:"ACLED",u:"https://acleddata.com/"}]},
+  {id:"d10",date:"2026-03-16",loc:"戈马西部",loc_en:"Mugunga, Goma",lat:-1.61,lng:29.20,cat:"drc_defense",target:"穆古翁加M23阵地",target_en:"Mugunga M23 positions",fatalities:13,desc:"韦扎伦多战士从维龙加国家公园夜袭戈马西部M23阵地,M23击退攻击杀死13名战士。",desc_en:"Wazalendo fighters launched a night raid on M23 positions in western Goma from Virunga National Park; M23 repelled the attack, killing 13 fighters.",sources:[{n:"Congo Quotidien",u:"https://www.congoquotidien.com/"},{n:"Critical Threats",u:"https://www.criticalthreats.org/"}]},
+  {id:"d11",date:"2026-03-17",loc:"卢瑟鲁",loc_en:"Rutshuru, N. Kivu",lat:-1.51,lng:28.96,cat:"drc_defense",target:"穆坦达4村",target_en:"Mutanda villages (4)",fatalities:null,desc:"韦扎伦多对卢瑟鲁穆坦达地区4个村庄进行夜间突袭,攻击M23阵地。",desc_en:"Wazalendo conducted night raids on 4 villages in the Mutanda area of Rutshuru, attacking M23 positions.",sources:[{n:"Critical Threats",u:"https://www.criticalthreats.org/"}]},
+  {id:"d12",date:"2026-02-15",loc:"南非/MONUSCO",loc_en:"MONUSCO Areas",lat:-1.82,lng:29.18,cat:"foreign",target:"南非维和部队",target_en:"South African peacekeepers",fatalities:null,desc:"南非在近30年后宣布从MONUSCO撤出700多名维和人员,加剧北基伍和伊图里安全挑战。",desc_en:"South Africa announced the withdrawal of 700+ peacekeepers from MONUSCO after nearly 30 years, exacerbating security challenges in North Kivu and Ituri.",sources:[{n:"UN News",u:"https://www.globalsecurity.org/"}]}
+];
+const drcCatColors = {m23_advance:'#dc2626',drc_defense:'#2563eb',civilian:'#ea580c',foreign:'#8b5cf6',humanitarian:'#059669'};
+const drcCatNames = {m23_advance:'M23推进',drc_defense:'刚果军防御',civilian:'平民伤亡',foreign:'外部干介',humanitarian:'人道危机'};
+
+// ======================== I18N ========================
+let currentLang = 'zh'; // 'zh' or 'en'
+
+const i18n = {
+  'site-title': { zh: '全球地缘政治冲突风险监测', en: 'Geopolitical Conflict Monitor' },
+  'monitoring': { zh: 'MONITORING', en: 'MONITORING' },
+
+  // View buttons
+  'view-global': { zh: '全球概览', en: 'Global' },
+  'view-ukraine': { zh: '俄乌战区', en: 'RU-UA' },
+  'view-iran': { zh: '伊朗战区', en: 'Iran' },
+  'view-gaza': { zh: '加沙战区', en: 'Gaza' },
+  'view-sudan': { zh: '苏丹战区', en: 'Sudan' },
+  'view-yemen': { zh: '也门战区', en: 'Yemen' },
+  'view-myanmar': { zh: '缅甸战区', en: 'Myanmar' },
+  'view-syria': { zh: '叙利亚战区', en: 'Syria' },
+  'view-drc': { zh: '刚果战区', en: 'DRC' },
+
+  // Global sidebar stats
+  'stat-total': { zh: '全部冲突', en: 'Total' },
+  'stat-critical': { zh: '极危', en: 'Critical' },
+  'stat-high': { zh: '高危', en: 'High' },
+  'stat-medium': { zh: '中危', en: 'Medium' },
+
+  // Global filters
+  'filter-all': { zh: '全部', en: 'All' },
+  'filter-critical': { zh: '极危', en: 'Critical' },
+  'filter-high': { zh: '高危', en: 'High' },
+  'filter-medium': { zh: '中危', en: 'Medium' },
+
+  // OSINT
+  'osint-btn': { zh: '📡 OSINT 信源目录', en: '📡 OSINT Source Directory' },
+
+  // Analysis panel
+  'analysis-title': { zh: '🔍 深度分析报告', en: '🔍 Deep Analysis Reports' },
+  'analysis-subtitle': { zh: '智库研究与顶尖分析师洞察 · 数据更新: 2026年3月24日', en: 'Think Tank Research & Top Analyst Insights · Updated: Mar 24, 2026' },
+  'analysis-toggle-label': { zh: '深度分析', en: 'Analysis' },
+  'read-original': { zh: '阅读原文 ↗', en: 'Read Original ↗' },
+  'source': { zh: '来源 ↗', en: 'Source ↗' },
+
+  // Sidebar toggle
+  'sidebar-collapse': { zh: '收起/展开面板', en: 'Collapse/Expand Panel' },
+
+  // Theater titles
+  'analysis-overview-title': { zh: '全球战略态势总览', en: 'Global Strategic Overview' },
+  'analysis-ukraine-title': { zh: '俄乌战区深度分析', en: 'Russia-Ukraine Deep Analysis' },
+  'analysis-iran-title': { zh: '伊朗战区深度分析', en: 'Iran Theater Deep Analysis' },
+  'analysis-gaza-title': { zh: '加沙战区深度分析', en: 'Gaza Theater Deep Analysis' },
+  'analysis-sudan-title': { zh: '苏丹战区深度分析', en: 'Sudan Theater Deep Analysis' },
+  'analysis-yemen-title': { zh: '也门战区深度分析', en: 'Yemen Theater Deep Analysis' },
+  'analysis-myanmar-title': { zh: '缅甸战区深度分析', en: 'Myanmar Theater Deep Analysis' },
+  'analysis-syria-title': { zh: '叙利亚战区深度分析', en: 'Syria Theater Deep Analysis' },
+  'analysis-drc-title': { zh: '刚果战区深度分析', en: 'DRC Theater Deep Analysis' },
+
+  // Analysis section headers
+  'section-risk': { zh: '🌍 系统性风险评估', en: '🌍 Systemic Risk Assessment' },
+  'section-analysts': { zh: '🧠 顶尖分析师独到观点', en: '🧠 Top Analyst Insights' },
+  'section-reports': { zh: '📋 智库深度报告', en: '📋 Think Tank Reports' },
+};
+
+// Category name translations
+const catNames_en = { airstrike: 'Airstrike', ballistic: 'Ballistic Missile', naval: 'Naval Op', cyber: 'Cyber/EW', covert: 'Special Ops' };
+const uaCatNames_en = { ru_strike: 'Russian Strike', ua_strike: 'Ukrainian Strike', ground: 'Ground Combat', territory: 'Territory Change', diplomatic: 'Diplomacy' };
+const gazaCatNames_en = { airstrike: 'Airstrike', ground_op: 'Ground Op', ceasefire: 'Ceasefire', humanitarian: 'Humanitarian', escalation: 'Escalation' };
+const sudanCatNames_en = { saf_advance: 'SAF Advance', rsf_attack: 'RSF Attack', civilian: 'Civilian', humanitarian: 'Humanitarian', foreign: 'Foreign' };
+const yemenCatNames_en = { houthi_attack: 'Houthi Attack', us_strike: 'US Strike', shipping: 'Red Sea', ground: 'Ground', humanitarian: 'Humanitarian' };
+const myanmarCatNames_en = { resistance: 'Resistance', junta_strike: 'Junta Strike', battle: 'Battle', ethnic: 'Ethnic', civilian: 'Civilian' };
+const syriaCatNames_en = { transition: 'Transition', israel_strike: 'Israeli Strike', turkey_op: 'Turkey Op', sdf: 'Kurdish SDF', isis: 'ISIS' };
+const drcCatNames_en = { m23_advance: 'M23 Advance', drc_defense: 'DRC Defense', civilian: 'Civilian', foreign: 'Foreign', humanitarian: 'Humanitarian' };
+
+// Global conflict status and parties translations
+const statusEn = {
+  'RU-UA': 'Ukraine recaptured 400km² in Feb 2026, first gains since 2024. Ceasefire talks ~95% complete but full war end unclear. Combined casualties exceed 1M.',
+  'SD-CW': 'World\'s worst humanitarian crisis. 400K+ dead, 11M displaced. SAF retook Khartoum Jan 2026, but fighting intensifies in Kordofan. 33.7M need aid.',
+  'IL-PS': 'Oct 2025 ceasefire broken Mar 18, 2026. 75K+ Palestinians, 2K+ Israelis killed. Transitional governance framework agreed Jan 14 but situation volatile.',
+  'IR-IL-US': 'US-Israeli joint military operation launched Feb 28, 2026. Regional escalation through proxy forces. Iran faces potential chaos and new war risks.',
+  'YE-CW': 'Houthis control northwest including Sanaa. Unstable ceasefire since 2022. Red Sea attacks paused then resumed 2025. 23.1M Yemenis need aid.',
+  'SY-TR-IL': 'Post-Assad collapse Dec 2024. Turkey and Israel compete for influence. Israel conducted 988 airstrikes in 7 months. High escalation risk.',
+  'IN-PK': 'Military strikes after deadly Apr 2025 attack. May 10 ceasefire. India threatens Indus Waters Treaty suspension. Medium-high new conflict probability.',
+  'VE-US': 'US Operation Absolute Resolve arrested Maduro Jan 3, 2026. Seen as violating international law. Delcy Rodriguez sworn in as interim president Jan 6.',
+  'SAHEL': 'AQIM and ISIS affiliates advancing toward coastal West Africa. Russia expanding military presence. Humanitarian crisis ongoing.',
+  'MM-CW': 'Military operations escalating, criminal activity increasing, humanitarian displacement. Listed as top 2026 concern by US experts.',
+  'CD-M23': 'Ethnic and political conflict ongoing. Listed as 2026 US foreign policy priority. Complex regional involvement and humanitarian crisis.',
+  'SO-AS': 'Al-Shabaab insurgency continues. Government forces and AU troops conduct joint operations. Security situation fragile.',
+  'NG-BH': 'Boko Haram and ISWAP active in northeast. Herder-farmer conflict in central belt. Northwest kidnapping crisis.',
+  'LB-HZ': 'Israeli military operations targeting Hezbollah to prevent recovery, threatening Syria political transition. Part of broader Iran-Israel tensions.',
+  'HT-GV': 'Gangs control most of Port-au-Prince. Multinational Security Support Mission deployed 2024 with limited effect. Severe humanitarian crisis.',
+  'LY-CW': 'Two competing governments. Tribal conflicts. Foreign power intervention. Unified elections remain distant.'
+};
+
+const partiesEn = {
+  'RU-UA': ['Russia', 'Ukraine'],
+  'SD-CW': ['SAF', 'RSF'],
+  'IL-PS': ['Israel', 'Hamas', 'PIJ'],
+  'IR-IL-US': ['Iran', 'Israel', 'USA', 'Hezbollah', 'Houthis'],
+  'YE-CW': ['Yemen Gov', 'Houthis', 'Saudi Arabia', 'UAE'],
+  'SY-TR-IL': ['Israel', 'Turkey', 'Syrian Transition Gov', 'Kurdish SDF'],
+  'IN-PK': ['India', 'Pakistan'],
+  'VE-US': ['USA', 'Venezuela', 'Russia', 'China'],
+  'SAHEL': ['Mali/BF/Niger Juntas', 'AQIM', 'ISIS', 'Wagner Group'],
+  'MM-CW': ['Myanmar Junta', 'Ethnic Armed Orgs', 'PDF'],
+  'CD-M23': ['DRC Gov', 'M23', 'FDLR', 'Rwanda (alleged)'],
+  'SO-AS': ['Somalia Gov', 'Al-Shabaab'],
+  'NG-BH': ['Nigeria Gov', 'Boko Haram', 'ISWAP', 'Herder Militias'],
+  'LB-HZ': ['Israel', 'Hezbollah', 'Lebanon'],
+  'HT-GV': ['Gang Coalitions', 'Haiti Transitional Gov', 'Kenya-led MSS Mission'],
+  'LY-CW': ['Tripoli GNU', 'Tobruk HoR/LNA']
+};
+
+const attackerEn = {'美国':'US','以色列':'Israel','伊朗':'Iran','美国/以色列':'US/Israel','伊朗IRGC':'Iran IRGC'};
+
+// ======================== STATE ========================
+let currentView = 'global';
+const globalMarkers = {};
+const iranMarkers = {};
+
+// ======================== INIT ========================
+document.getElementById('update-time').textContent = 'DATA: ' + DATA.metadata.last_updated;
+
+const conflicts = DATA.conflicts;
+document.getElementById('total-count').textContent = conflicts.length;
+document.getElementById('critical-count').textContent = conflicts.filter(c => c.risk === 'CRITICAL').length;
+document.getElementById('high-count').textContent = conflicts.filter(c => c.risk === 'HIGH').length;
+document.getElementById('medium-count').textContent = conflicts.filter(c => c.risk === 'MEDIUM').length;
+
+document.getElementById('n-us').textContent = iranEvents.filter(e=>e.attacker.includes('美国')).length;
+document.getElementById('n-il').textContent = iranEvents.filter(e=>e.attacker.includes('以色列')).length;
+document.getElementById('n-ir').textContent = iranEvents.filter(e=>e.attacker.includes('伊朗')).length;
+document.getElementById('n-cas').textContent = '1,500+';
+
+document.getElementById('n-ru-strike').textContent = ukraineEvents.filter(e=>e.cat==='ru_strike').length;
+document.getElementById('n-ua-strike').textContent = ukraineEvents.filter(e=>e.cat==='ua_strike').length;
+document.getElementById('n-ground').textContent = ukraineEvents.filter(e=>e.cat==='ground').length;
+document.getElementById('n-ua-gain').textContent = ukraineEvents.filter(e=>e.cat==='territory').length;
+
+// Initialize Gaza stats
+document.getElementById('n-airstrike-gz').textContent = gazaEvents.filter(e=>e.cat==='airstrike').length;
+document.getElementById('n-ground-op-gz').textContent = gazaEvents.filter(e=>e.cat==='ground_op').length;
+document.getElementById('n-ceasefire-gz').textContent = gazaEvents.filter(e=>e.cat==='ceasefire').length;
+document.getElementById('n-humanitarian-gz').textContent = gazaEvents.filter(e=>e.cat==='humanitarian').length;
+
+// Initialize Sudan stats
+document.getElementById('n-saf-advance').textContent = sudanEvents.filter(e=>e.cat==='saf_advance').length;
+document.getElementById('n-rsf-attack').textContent = sudanEvents.filter(e=>e.cat==='rsf_attack').length;
+document.getElementById('n-civilian-sd').textContent = sudanEvents.filter(e=>e.cat==='civilian').length;
+document.getElementById('n-humanitarian-sd').textContent = sudanEvents.filter(e=>e.cat==='humanitarian').length;
+
+// Initialize Yemen stats
+document.getElementById('n-houthi-attack').textContent = yemenEvents.filter(e=>e.cat==='houthi_attack').length;
+document.getElementById('n-us-strike').textContent = yemenEvents.filter(e=>e.cat==='us_strike').length;
+document.getElementById('n-shipping').textContent = yemenEvents.filter(e=>e.cat==='shipping').length;
+document.getElementById('n-ground-ye').textContent = yemenEvents.filter(e=>e.cat==='ground').length;
+
+// Initialize Myanmar stats
+document.getElementById('n-resistance').textContent = myanmarEvents.filter(e=>e.cat==='resistance').length;
+document.getElementById('n-junta-strike').textContent = myanmarEvents.filter(e=>e.cat==='junta_strike').length;
+document.getElementById('n-battle').textContent = myanmarEvents.filter(e=>e.cat==='battle').length;
+document.getElementById('n-ethnic').textContent = myanmarEvents.filter(e=>e.cat==='ethnic').length;
+
+// Initialize Syria stats
+document.getElementById('n-transition').textContent = syriaEvents.filter(e=>e.cat==='transition').length;
+document.getElementById('n-israel-strike').textContent = syriaEvents.filter(e=>e.cat==='israel_strike').length;
+document.getElementById('n-turkey-op').textContent = syriaEvents.filter(e=>e.cat==='turkey_op').length;
+document.getElementById('n-sdf').textContent = syriaEvents.filter(e=>e.cat==='sdf').length;
+
+// Initialize DRC stats
+document.getElementById('n-m23-advance').textContent = drcEvents.filter(e=>e.cat==='m23_advance').length;
+document.getElementById('n-drc-defense').textContent = drcEvents.filter(e=>e.cat==='drc_defense').length;
+document.getElementById('n-civilian-drc').textContent = drcEvents.filter(e=>e.cat==='civilian').length;
+document.getElementById('n-foreign').textContent = drcEvents.filter(e=>e.cat==='foreign').length;
+
+// ======================== MAP ========================
+const map = L.map('map', { center: [25, 30], zoom: 3, zoomControl: true, attributionControl: false });
+
+const tileSources = [
+  'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'
+];
+let currentTileIndex = 0;
+let tileLayer = null;
+
+function loadTiles(index) {
+  if (index >= tileSources.length) return;
+  if (tileLayer) map.removeLayer(tileLayer);
+  tileLayer = L.tileLayer(tileSources[index], { maxZoom: 18 }).addTo(map);
+  if (index < tileSources.length - 1) {
+    setTimeout(() => {
+      const tiles = document.querySelectorAll('.leaflet-tile-loaded');
+      if (tiles.length === 0) { loadTiles(index + 1); }
+    }, 4000);
+  }
+}
+loadTiles(0);
+
+// ======================== GLOBAL MARKERS ========================
+conflicts.forEach(c => {
+  const riskClass = c.risk.toLowerCase();
+  const icon = L.divIcon({
+    className: '',
+    html: '<div class="conflict-marker ' + riskClass + '"></div>',
+    iconSize: [24, 24], iconAnchor: [12, 12]
+  });
+  const marker = L.marker([c.lat, c.lng], { icon }).addTo(map);
+  marker.bindPopup(
+    '<div style="min-width:180px"><div style="font-weight:700;font-size:14px;margin-bottom:4px">' + c.name + '</div>' +
+    '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px">' + c.name_en + '</div>' +
+    '<span class="risk-badge ' + c.risk + '">' + c.risk + '</span></div>',
+    { closeButton: false }
+  );
+  marker.on('click', () => showGlobalDetail(c.id));
+  globalMarkers[c.id] = marker;
+});
+
+// ======================== IRAN MARKERS (hidden initially) ========================
+iranEvents.forEach(e => {
+  const color = catColors[e.cat] || '#6b7280';
+  const size = e.fatalities > 5 ? 14 : e.cat==='nuclear' ? 12 : 10;
+  const icon = L.divIcon({
+    className:'',
+    html:'<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';border:2px solid white;box-shadow:0 0 6px '+color+'80, 0 1px 3px rgba(0,0,0,0.3);cursor:pointer"></div>',
+    iconSize:[size,size], iconAnchor:[size/2,size/2]
+  });
+  const m = L.marker([e.lat,e.lng],{icon});
+  m.bindPopup('<b>'+e.loc+'</b><br><span style="color:'+color+';font-weight:600">'+catNames[e.cat]+'</span> · '+e.date+'<br>'+e.target, {closeButton:false});
+  m.on('click',()=>showIranDetail(e.id));
+  iranMarkers[e.id] = m;
+});
+
+// ======================== UKRAINE MARKERS (hidden initially) ========================
+const ukraineMarkers = {};
+ukraineEvents.forEach(e => {
+  const color = uaCatColors[e.cat] || '#6b7280';
+  const size = e.cat==='territory' ? 14 : e.cat==='ground' ? 11 : 10;
+  const icon = L.divIcon({
+    className:'',
+    html:'<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';border:2px solid white;box-shadow:0 0 6px '+color+'80, 0 1px 3px rgba(0,0,0,0.3);cursor:pointer"></div>',
+    iconSize:[size,size], iconAnchor:[size/2,size/2]
+  });
+  const m = L.marker([e.lat,e.lng],{icon});
+  m.bindPopup('<b>'+e.loc+'</b><br><span style="color:'+color+';font-weight:600">'+uaCatNames[e.cat]+'</span> · '+e.date+'<br>'+e.target, {closeButton:false});
+  m.on('click',()=>showUkraineDetail(e.id));
+  ukraineMarkers[e.id] = m;
+});
+
+// ======================== GAZA MARKERS (hidden initially) ========================
+const gazaMarkers = {};
+gazaEvents.forEach(e => {
+  const color = gazaCatColors[e.cat] || '#6b7280';
+  const size = e.fatalities > 10 ? 13 : e.cat==='humanitarian' ? 11 : 9;
+  const icon = L.divIcon({
+    className:'',
+    html:'<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';border:2px solid white;box-shadow:0 0 6px '+color+'80, 0 1px 3px rgba(0,0,0,0.3);cursor:pointer"></div>',
+    iconSize:[size,size], iconAnchor:[size/2,size/2]
+  });
+  const m = L.marker([e.lat,e.lng],{icon});
+  m.bindPopup('<b>'+e.loc+'</b><br><span style="color:'+color+';font-weight:600">'+gazaCatNames[e.cat]+'</span> · '+e.date+'<br>'+e.target, {closeButton:false});
+  m.on('click',()=>showGazaDetail(e.id));
+  gazaMarkers[e.id] = m;
+});
+
+// ======================== SUDAN MARKERS (hidden initially) ========================
+const sudanMarkers = {};
+sudanEvents.forEach(e => {
+  const color = sudanCatColors[e.cat] || '#6b7280';
+  const size = e.fatalities > 100 ? 13 : e.cat==='humanitarian' ? 10 : 9;
+  const icon = L.divIcon({
+    className:'',
+    html:'<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';border:2px solid white;box-shadow:0 0 6px '+color+'80, 0 1px 3px rgba(0,0,0,0.3);cursor:pointer"></div>',
+    iconSize:[size,size], iconAnchor:[size/2,size/2]
+  });
+  const m = L.marker([e.lat,e.lng],{icon});
+  m.bindPopup('<b>'+e.loc+'</b><br><span style="color:'+color+';font-weight:600">'+sudanCatNames[e.cat]+'</span> · '+e.date+'<br>'+e.target, {closeButton:false});
+  m.on('click',()=>showSudanDetail(e.id));
+  sudanMarkers[e.id] = m;
+});
+
+// ======================== YEMEN MARKERS (hidden initially) ========================
+const yemenMarkers = {};
+yemenEvents.forEach(e => {
+  const color = yemenCatColors[e.cat] || '#6b7280';
+  const size = e.cat==='shipping' ? 12 : e.cat==='houthi_attack' ? 11 : 9;
+  const icon = L.divIcon({
+    className:'',
+    html:'<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';border:2px solid white;box-shadow:0 0 6px '+color+'80, 0 1px 3px rgba(0,0,0,0.3);cursor:pointer"></div>',
+    iconSize:[size,size], iconAnchor:[size/2,size/2]
+  });
+  const m = L.marker([e.lat,e.lng],{icon});
+  m.bindPopup('<b>'+e.loc+'</b><br><span style="color:'+color+';font-weight:600">'+yemenCatNames[e.cat]+'</span> · '+e.date+'<br>'+e.target, {closeButton:false});
+  m.on('click',()=>showYemenDetail(e.id));
+  yemenMarkers[e.id] = m;
+});
+
+// ======================== MYANMAR MARKERS (hidden initially) ========================
+const myanmarMarkers = {};
+myanmarEvents.forEach(e => {
+  const color = myanmarCatColors[e.cat] || '#6b7280';
+  const size = e.fatalities > 50 ? 12 : e.cat==='junta_strike' ? 11 : 9;
+  const icon = L.divIcon({
+    className:'',
+    html:'<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';border:2px solid white;box-shadow:0 0 6px '+color+'80, 0 1px 3px rgba(0,0,0,0.3);cursor:pointer"></div>',
+    iconSize:[size,size], iconAnchor:[size/2,size/2]
+  });
+  const m = L.marker([e.lat,e.lng],{icon});
+  m.bindPopup('<b>'+e.loc+'</b><br><span style="color:'+color+';font-weight:600">'+myanmarCatNames[e.cat]+'</span> · '+e.date+'<br>'+e.target, {closeButton:false});
+  m.on('click',()=>showMyanmarDetail(e.id));
+  myanmarMarkers[e.id] = m;
+});
+
+// ======================== SYRIA MARKERS (hidden initially) ========================
+const syriaMarkers = {};
+syriaEvents.forEach(e => {
+  const color = syriaCatColors[e.cat] || '#6b7280';
+  const size = e.cat==='transition' ? 12 : e.cat==='israel_strike' ? 10 : 9;
+  const icon = L.divIcon({
+    className:'',
+    html:'<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';border:2px solid white;box-shadow:0 0 6px '+color+'80, 0 1px 3px rgba(0,0,0,0.3);cursor:pointer"></div>',
+    iconSize:[size,size], iconAnchor:[size/2,size/2]
+  });
+  const m = L.marker([e.lat,e.lng],{icon});
+  m.bindPopup('<b>'+e.loc+'</b><br><span style="color:'+color+';font-weight:600">'+syriaCatNames[e.cat]+'</span> · '+e.date+'<br>'+e.target, {closeButton:false});
+  m.on('click',()=>showSyriaDetail(e.id));
+  syriaMarkers[e.id] = m;
+});
+
+// ======================== DRC MARKERS (hidden initially) ========================
+const drcMarkers = {};
+drcEvents.forEach(e => {
+  const color = drcCatColors[e.cat] || '#6b7280';
+  const size = e.fatalities > 100 ? 12 : e.cat==='m23_advance' ? 11 : 9;
+  const icon = L.divIcon({
+    className:'',
+    html:'<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';border:2px solid white;box-shadow:0 0 6px '+color+'80, 0 1px 3px rgba(0,0,0,0.3);cursor:pointer"></div>',
+    iconSize:[size,size], iconAnchor:[size/2,size/2]
+  });
+  const m = L.marker([e.lat,e.lng],{icon});
+  m.bindPopup('<b>'+e.loc+'</b><br><span style="color:'+color+';font-weight:600">'+drcCatNames[e.cat]+'</span> · '+e.date+'<br>'+e.target, {closeButton:false});
+  m.on('click',()=>showDrcDetail(e.id));
+  drcMarkers[e.id] = m;
+});
+
+// ======================== VIEW SWITCHING ========================
+function switchView(view) {
+  currentView = view;
+  closeDetail();
+  document.getElementById('osint-panel').classList.remove('show');
+
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.view-btn[onclick*="'+view+'"]').classList.add('active');
+
+  // Hide all sidebars and legends
+  ['global-sidebar','ukraine-sidebar','iran-sidebar','gaza-sidebar','sudan-sidebar','yemen-sidebar','myanmar-sidebar','syria-sidebar','drc-sidebar'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  ['iran-legend','ukraine-legend','gaza-legend','sudan-legend','yemen-legend','myanmar-legend','syria-legend','drc-legend'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('osint-toggle').classList.add('hidden');
+
+  // Remove all theater markers
+  Object.values(globalMarkers).forEach(m => map.removeLayer(m));
+  Object.values(iranMarkers).forEach(m => map.removeLayer(m));
+  Object.values(ukraineMarkers).forEach(m => map.removeLayer(m));
+  Object.values(gazaMarkers).forEach(m => map.removeLayer(m));
+  Object.values(sudanMarkers).forEach(m => map.removeLayer(m));
+  Object.values(yemenMarkers).forEach(m => map.removeLayer(m));
+  Object.values(myanmarMarkers).forEach(m => map.removeLayer(m));
+  Object.values(syriaMarkers).forEach(m => map.removeLayer(m));
+  Object.values(drcMarkers).forEach(m => map.removeLayer(m));
+
+  if (view === 'global') {
+    document.getElementById('global-sidebar').classList.remove('hidden');
+    document.getElementById('osint-toggle').classList.remove('hidden');
+    Object.values(globalMarkers).forEach(m => m.addTo(map));
+    map.flyTo([25, 30], 3, { duration: 0.8 });
+  } else if (view === 'ukraine') {
+    document.getElementById('ukraine-sidebar').classList.remove('hidden');
+    document.getElementById('ukraine-legend').style.display = 'block';
+    Object.values(ukraineMarkers).forEach(m => m.addTo(map));
+    map.flyTo([48.5, 37], 6, { duration: 0.8 });
+    renderUkraineList('ALL');
+  } else if (view === 'iran') {
+    document.getElementById('iran-sidebar').classList.remove('hidden');
+    document.getElementById('iran-legend').style.display = 'block';
+    Object.values(iranMarkers).forEach(m => m.addTo(map));
+    map.flyTo([32.5, 52], 6, { duration: 0.8 });
+    renderIranList('ALL');
+  } else if (view === 'gaza') {
+    document.getElementById('gaza-sidebar').classList.remove('hidden');
+    document.getElementById('gaza-legend').style.display = 'block';
+    Object.values(gazaMarkers).forEach(m => m.addTo(map));
+    map.flyTo([31.4, 34.4], 10, { duration: 0.8 });
+    renderGazaList('ALL');
+  } else if (view === 'sudan') {
+    document.getElementById('sudan-sidebar').classList.remove('hidden');
+    document.getElementById('sudan-legend').style.display = 'block';
+    Object.values(sudanMarkers).forEach(m => m.addTo(map));
+    map.flyTo([14.0, 30.0], 6, { duration: 0.8 });
+    renderSudanList('ALL');
+  } else if (view === 'yemen') {
+    document.getElementById('yemen-sidebar').classList.remove('hidden');
+    document.getElementById('yemen-legend').style.display = 'block';
+    Object.values(yemenMarkers).forEach(m => m.addTo(map));
+    map.flyTo([16.0, 46.0], 6, { duration: 0.8 });
+    renderYemenList('ALL');
+  } else if (view === 'myanmar') {
+    document.getElementById('myanmar-sidebar').classList.remove('hidden');
+    document.getElementById('myanmar-legend').style.display = 'block';
+    Object.values(myanmarMarkers).forEach(m => m.addTo(map));
+    map.flyTo([20.0, 96.0], 6, { duration: 0.8 });
+    renderMyanmarList('ALL');
+  } else if (view === 'syria') {
+    document.getElementById('syria-sidebar').classList.remove('hidden');
+    document.getElementById('syria-legend').style.display = 'block';
+    Object.values(syriaMarkers).forEach(m => m.addTo(map));
+    map.flyTo([35.0, 38.0], 7, { duration: 0.8 });
+    renderSyriaList('ALL');
+  } else if (view === 'drc') {
+    document.getElementById('drc-sidebar').classList.remove('hidden');
+    document.getElementById('drc-legend').style.display = 'block';
+    Object.values(drcMarkers).forEach(m => m.addTo(map));
+    map.flyTo([-2.0, 29.0], 8, { duration: 0.8 });
+    renderDrcList('ALL');
+  }
+
+  // Auto-render analysis based on current view
+  if (document.getElementById('analysis-panel').classList.contains('show')) {
+    renderAnalysis(currentView === 'global' ? 'overview' : currentView);
+  }
+}
+
+// ======================== GLOBAL LIST ========================
+function renderGlobalList(filter) {
+  const list = document.getElementById('conflict-list');
+  const filtered = filter === 'ALL' ? conflicts : conflicts.filter(c => c.risk === filter);
+  const L = currentLang;
+  const regionMap = {'东欧':'Eastern Europe','东非':'East Africa','中东':'Middle East','阿拉伯半岛':'Arabian Peninsula','南亚':'South Asia','拉丁美洲':'Latin America','西非':'West Africa','东南亚':'Southeast Asia','中非':'Central Africa','北非':'North Africa','加勒比':'Caribbean'};
+  const typeMap = {'国际武装冲突':'International Armed Conflict','内战':'Civil War','武装冲突/区域升级':'Armed Conflict/Regional Escalation','国际军事冲突':'International Military Conflict','内战/区域干预':'Civil War/Regional Intervention','紧张地带/武装冲突':'Tense Zone/Armed Conflict','冻结冲突/周期性武装冲突':'Frozen Conflict/Periodic Armed Conflict','军事干预':'Military Intervention','叛乱/恐怖主义':'Insurgency/Terrorism','帮派暴力/国家崩溃':'Gang Violence/State Collapse','分裂/低烈度冲突':'Division/Low-intensity Conflict'};
+  list.innerHTML = filtered.map(c => `
+    <div class="conflict-item risk-${c.risk}" data-id="${c.id}" onclick="showGlobalDetail('${c.id}')">
+      <div class="top-row">
+        <span class="name">${L === 'en' && c.name_en ? c.name_en : c.name}</span>
+        <span class="risk-badge ${c.risk}">${c.risk}</span>
+      </div>
+      <div class="region-tag">${L === 'en' ? (regionMap[c.region] || c.region) : c.region} · ${L === 'en' ? (typeMap[c.type] || c.type) : c.type} · ${c.start_date}</div>
+      <div class="status-text">${L === 'en' ? (statusEn[c.id] || c.status) : c.status}</div>
+    </div>
+  `).join('');
+}
+renderGlobalList('ALL');
+
+document.querySelectorAll('#global-filters .filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('#global-filters .filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderGlobalList(tab.dataset.filter);
+  });
+});
+
+// ======================== IRAN LIST ========================
+function renderIranList(filter) {
+  const list = document.getElementById('iran-event-list');
+  const filtered = filter === 'ALL' ? [...iranEvents] : iranEvents.filter(e => e.cat === filter);
+  filtered.sort((a, b) => b.date.localeCompare(a.date));
+  const L = currentLang;
+  list.innerHTML = filtered.map(e => {
+    const cn = L === 'en' ? catNames_en[e.cat] : catNames[e.cat];
+    return `
+    <div class="iran-event-card" data-id="${e.id}" onclick="showIranDetail('${e.id}')">
+      <div class="top"><span class="loc">${L === 'en' && e.loc_en ? e.loc_en : e.loc}</span><span class="date">${e.date}</span></div>
+      <span class="type-tag ${e.cat}">${cn} · ${L === 'en' && e.attacker_en ? e.attacker_en : e.attacker}</span>
+      <div class="desc">${L === 'en' && e.target_en ? e.target_en : e.target}</div>
+      ${e.fatalities ? `<div class="casualties">☠ ${e.fatalities}${L === 'en' ? ' killed' : '人死亡'}</div>` : ''}
+    </div>
+  `;}).join('');
+}
+
+document.querySelectorAll('#iran-filters .filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('#iran-filters .filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderIranList(tab.dataset.filter);
+  });
+});
+
+// ======================== UKRAINE LIST ========================
+function renderUkraineList(filter) {
+  const list = document.getElementById('ukraine-event-list');
+  const filtered = filter === 'ALL' ? [...ukraineEvents] : ukraineEvents.filter(e => e.cat === filter);
+  filtered.sort((a, b) => b.date.localeCompare(a.date));
+  const L = currentLang;
+  list.innerHTML = filtered.map(e => {
+    const cn = L === 'en' ? uaCatNames_en[e.cat] : uaCatNames[e.cat];
+    return `
+    <div class="iran-event-card" data-id="${e.id}" onclick="showUkraineDetail('${e.id}')">
+      <div class="top"><span class="loc">${L === 'en' && e.loc_en ? e.loc_en : e.loc}</span><span class="date">${e.date}</span></div>
+      <span class="type-tag ${e.cat}" style="background:${uaCatColors[e.cat]}12;color:${uaCatColors[e.cat]}">${cn}</span>
+      <div class="desc">${L === 'en' && e.target_en ? e.target_en : e.target}</div>
+      ${e.fatalities ? `<div class="casualties">☠ ${e.fatalities}${L === 'en' ? ' killed' : '人死亡'}</div>` : ''}
+    </div>
+  `;}).join('');
+}
+
+document.querySelectorAll('#ukraine-filters .filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('#ukraine-filters .filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderUkraineList(tab.dataset.filter);
+  });
+});
+
+// ======================== DETAIL PANELS ========================
+function showUkraineDetail(id) {
+  const e = ukraineEvents.find(x => x.id === id);
+  if (!e) return;
+  const color = uaCatColors[e.cat];
+  const panel = document.getElementById('detail-panel');
+  const content = document.getElementById('detail-content');
+
+  document.querySelectorAll('.iran-event-card').forEach(c => c.classList.remove('active'));
+  const ac = document.querySelector(`.iran-event-card[data-id="${id}"]`);
+  if (ac) ac.classList.add('active');
+
+  map.flyTo([e.lat, e.lng], e.loc.includes('多') ? 5 : 7, { duration: 0.8 });
+  const L = currentLang;
+  const cn = L === 'en' ? uaCatNames_en[e.cat] : uaCatNames[e.cat];
+
+  content.innerHTML = `
+    <h2>${L === 'en' && e.loc_en ? e.loc_en : e.loc} <span style="font-size:12px;color:${color}">${cn}</span></h2>
+    <div class="meta-row">
+      <span class="meta-tag">${e.date}</span>
+      <span class="meta-tag" style="color:${color};border-color:${color}40">${cn}</span>
+      <span class="meta-tag">${L === 'en' && e.target_en ? e.target_en : e.target}</span>
+      ${e.fatalities ? `<span class="meta-tag" style="color:#dc2626">☠ ${e.fatalities}${L === 'en' ? ' killed' : '人死亡'}</span>` : ''}
+    </div>
+    <div class="status-full">${L === 'en' && e.desc_en ? e.desc_en : e.desc}</div>
+    <div class="sources-section">
+      <div class="label">${L === 'en' ? 'Sources' : '信源'}</div>
+      ${e.sources.map(s => `<a class="source-link" href="${s.u}" target="_blank">${s.n} ↗</a>`).join('')}
+    </div>
+  `;
+  panel.classList.add('show');
+}
+
+function showGlobalDetail(id) {
+  const c = conflicts.find(x => x.id === id);
+  if (!c) return;
+  const panel = document.getElementById('detail-panel');
+  const content = document.getElementById('detail-content');
+  const L = currentLang;
+  const regionMap = {'东欧':'Eastern Europe','东非':'East Africa','中东':'Middle East','阿拉伯半岛':'Arabian Peninsula','南亚':'South Asia','拉丁美洲':'Latin America','西非':'West Africa','东南亚':'Southeast Asia','中非':'Central Africa','北非':'North Africa','加勒比':'Caribbean'};
+  const typeMap = {'国际武装冲突':'International Armed Conflict','内战':'Civil War','武装冲突/区域升级':'Armed Conflict/Regional Escalation','国际军事冲突':'International Military Conflict','内战/区域干预':'Civil War/Regional Intervention','紧张地带/武装冲突':'Tense Zone/Armed Conflict','冻结冲突/周期性武装冲突':'Frozen Conflict/Periodic Armed Conflict','军事干预':'Military Intervention','叛乱/恐怖主义':'Insurgency/Terrorism','帮派暴力/国家崩溃':'Gang Violence/State Collapse','分裂/低烈度冲突':'Division/Low-intensity Conflict'};
+
+  document.querySelectorAll('.conflict-item').forEach(el => el.classList.remove('active'));
+  const activeItem = document.querySelector(`.conflict-item[data-id="${id}"]`);
+  if (activeItem) activeItem.classList.add('active');
+
+  map.flyTo([c.lat, c.lng], 5, { duration: 1 });
+
+  // Check if this conflict has a theater view
+  const theaterViews = {'IR-IL-US': 'iran', 'RU-UA': 'ukraine', 'IL-PS': 'gaza', 'SD-CW': 'sudan', 'YE-CW': 'yemen', 'MM-CW': 'myanmar', 'SY-TR-IL': 'syria', 'CD-M23': 'drc'};
+  const btnText = L === 'en' ? 'Enter Theater Detail View →' : '进入战区详情视图 →';
+  const theaterBtn = theaterViews[id]
+    ? `<button onclick="switchView('${theaterViews[id]}')" style="
+        width:100%;margin-top:16px;padding:10px 16px;border-radius:8px;border:1px solid var(--accent);
+        background:rgba(8,145,178,0.06);color:var(--accent);font-size:13px;font-weight:700;
+        cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px;
+      " onmouseover="this.style.background='rgba(8,145,178,0.12)'" onmouseout="this.style.background='rgba(8,145,178,0.06)'">
+        <span style="font-size:16px">⚔</span> ${btnText}
+      </button>`
+    : '';
+
+  content.innerHTML = `
+    <h2>${L === 'en' && c.name_en ? c.name_en : c.name}</h2>
+    <div class="meta-row">
+      <span class="risk-badge ${c.risk}">${c.risk}</span>
+      <span class="meta-tag">${L === 'en' ? (regionMap[c.region] || c.region) : c.region}</span>
+      <span class="meta-tag">${L === 'en' ? (typeMap[c.type] || c.type) : c.type}</span>
+      <span class="meta-tag">${L === 'en' ? 'Since' : '始于'} ${c.start_date}</span>
+    </div>
+    <div class="parties">
+      <div class="label">${L === 'en' ? 'Parties' : '冲突方'}</div>
+      <div class="names">${L === 'en' ? (partiesEn[c.id] || c.parties).join(' ⚔ ') : c.parties.join(' ⚔ ')}</div>
+    </div>
+    <div class="status-full">${L === 'en' ? (statusEn[c.id] || c.status) : c.status}</div>
+    <div class="sources-section">
+      <div class="label">${L === 'en' ? 'Sources & Analysis' : '信源与深度分析'}</div>
+      ${c.sources.map(s => `<a class="source-link" href="${s.url}" target="_blank">${s.name} ↗</a>`).join('')}
+    </div>
+    ${theaterBtn}
+  `;
+  panel.classList.add('show');
+}
+
+function showIranDetail(id) {
+  const e = iranEvents.find(x => x.id === id);
+  if (!e) return;
+  const color = catColors[e.cat];
+  const panel = document.getElementById('detail-panel');
+  const content = document.getElementById('detail-content');
+
+  document.querySelectorAll('.iran-event-card').forEach(c => c.classList.remove('active'));
+  const ac = document.querySelector(`.iran-event-card[data-id="${id}"]`);
+  if (ac) ac.classList.add('active');
+
+  map.flyTo([e.lat, e.lng], e.loc.includes('全国') ? 5 : 8, { duration: 0.8 });
+  const L = currentLang;
+  const cn = L === 'en' ? catNames_en[e.cat] : catNames[e.cat];
+
+  content.innerHTML = `
+    <h2>${L === 'en' && e.loc_en ? e.loc_en : e.loc} <span style="font-size:12px;color:${color}">${cn}</span></h2>
+    <div class="meta-row">
+      <span class="meta-tag">${e.date}</span>
+      <span class="meta-tag">${L === 'en' && e.attacker_en ? e.attacker_en : e.attacker}</span>
+      <span class="meta-tag">${L === 'en' && e.target_en ? e.target_en : e.target}</span>
+      ${e.fatalities ? `<span class="meta-tag" style="color:#ea580c">☠ ${e.fatalities}${L === 'en' ? ' killed' : '人死亡'}</span>` : ''}
+    </div>
+    <div class="status-full">${L === 'en' && e.desc_en ? e.desc_en : e.desc}</div>
+    <div class="sources-section">
+      <div class="label">${L === 'en' ? 'Sources' : '信源'}</div>
+      ${e.sources.map(s => `<a class="source-link" href="${s.u}" target="_blank">${s.n} ↗</a>`).join('')}
+    </div>
+  `;
+  panel.classList.add('show');
+}
+
+// ======================== GAZA LIST & DETAIL ========================
+function renderGazaList(filter) {
+  const list = document.getElementById('gaza-event-list');
+  const filtered = filter === 'ALL' ? [...gazaEvents] : gazaEvents.filter(e => e.cat === filter);
+  filtered.sort((a, b) => b.date.localeCompare(a.date));
+  const L = currentLang;
+  list.innerHTML = filtered.map(e => {
+    const cn = L === 'en' ? gazaCatNames_en[e.cat] : gazaCatNames[e.cat];
+    return `
+    <div class="iran-event-card" data-id="${e.id}" onclick="showGazaDetail('${e.id}')">
+      <div class="top"><span class="loc">${L === 'en' && e.loc_en ? e.loc_en : e.loc}</span><span class="date">${e.date}</span></div>
+      <span class="type-tag ${e.cat}" style="background:${gazaCatColors[e.cat]}12;color:${gazaCatColors[e.cat]}">${cn}</span>
+      <div class="desc">${L === 'en' && e.target_en ? e.target_en : e.target}</div>
+      ${e.fatalities ? `<div class="casualties">☠ ${e.fatalities}${L === 'en' ? ' killed' : '人死亡'}</div>` : ''}
+    </div>
+  `;}).join('');
+}
+document.querySelectorAll('#gaza-filters .filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('#gaza-filters .filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderGazaList(tab.dataset.filter);
+  });
+});
+function showGazaDetail(id) {
+  const e = gazaEvents.find(x => x.id === id);
+  if (!e) return;
+  const color = gazaCatColors[e.cat];
+  const panel = document.getElementById('detail-panel');
+  const content = document.getElementById('detail-content');
+  const L = currentLang;
+  const cn = L === 'en' ? gazaCatNames_en[e.cat] : gazaCatNames[e.cat];
+  document.querySelectorAll('.iran-event-card').forEach(c => c.classList.remove('active'));
+  const ac = document.querySelector(`.iran-event-card[data-id="${id}"]`);
+  if (ac) ac.classList.add('active');
+  map.flyTo([e.lat, e.lng], 9, { duration: 0.8 });
+  content.innerHTML = `
+    <h2>${L === 'en' && e.loc_en ? e.loc_en : e.loc} <span style="font-size:12px;color:${color}">${cn}</span></h2>
+    <div class="meta-row">
+      <span class="meta-tag">${e.date}</span>
+      <span class="meta-tag">${L === 'en' && e.target_en ? e.target_en : e.target}</span>
+      ${e.fatalities ? `<span class="meta-tag" style="color:#ea580c">☠ ${e.fatalities}${L === 'en' ? ' killed' : '人死亡'}</span>` : ''}
+    </div>
+    <div class="status-full">${L === 'en' && e.desc_en ? e.desc_en : e.desc}</div>
+    <div class="sources-section">
+      <div class="label">${L === 'en' ? 'Sources' : '信源'}</div>
+      ${e.sources.map(s => `<a class="source-link" href="${s.u}" target="_blank">${s.n} ↗</a>`).join('')}
+    </div>
+  `;
+  panel.classList.add('show');
+}
+
+// ======================== SUDAN LIST & DETAIL ========================
+function renderSudanList(filter) {
+  const list = document.getElementById('sudan-event-list');
+  const filtered = filter === 'ALL' ? [...sudanEvents] : sudanEvents.filter(e => e.cat === filter);
+  filtered.sort((a, b) => b.date.localeCompare(a.date));
+  const L = currentLang;
+  list.innerHTML = filtered.map(e => {
+    const cn = L === 'en' ? sudanCatNames_en[e.cat] : sudanCatNames[e.cat];
+    return `
+    <div class="iran-event-card" data-id="${e.id}" onclick="showSudanDetail('${e.id}')">
+      <div class="top"><span class="loc">${L === 'en' && e.loc_en ? e.loc_en : e.loc}</span><span class="date">${e.date}</span></div>
+      <span class="type-tag ${e.cat}" style="background:${sudanCatColors[e.cat]}12;color:${sudanCatColors[e.cat]}">${cn}</span>
+      <div class="desc">${L === 'en' && e.target_en ? e.target_en : e.target}</div>
+      ${e.fatalities ? `<div class="casualties">☠ ${e.fatalities}${L === 'en' ? ' killed' : '人死亡'}</div>` : ''}
+    </div>
+  `;}).join('');
+}
+document.querySelectorAll('#sudan-filters .filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('#sudan-filters .filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderSudanList(tab.dataset.filter);
+  });
+});
+function showSudanDetail(id) {
+  const e = sudanEvents.find(x => x.id === id);
+  if (!e) return;
+  const color = sudanCatColors[e.cat];
+  const panel = document.getElementById('detail-panel');
+  const content = document.getElementById('detail-content');
+  document.querySelectorAll('.iran-event-card').forEach(c => c.classList.remove('active'));
+  const ac = document.querySelector(`.iran-event-card[data-id="${id}"]`);
+  if (ac) ac.classList.add('active');
+  map.flyTo([e.lat, e.lng], 8, { duration: 0.8 });
+  const L = currentLang;
+  const cn = L === 'en' ? sudanCatNames_en[e.cat] : sudanCatNames[e.cat];
+  content.innerHTML = `
+    <h2>${L === 'en' && e.loc_en ? e.loc_en : e.loc} <span style="font-size:12px;color:${color}">${cn}</span></h2>
+    <div class="meta-row">
+      <span class="meta-tag">${e.date}</span>
+      <span class="meta-tag">${L === 'en' && e.target_en ? e.target_en : e.target}</span>
+      ${e.fatalities ? `<span class="meta-tag" style="color:#ea580c">☠ ${e.fatalities}${L === 'en' ? ' killed' : '人死亡'}</span>` : ''}
+    </div>
+    <div class="status-full">${L === 'en' && e.desc_en ? e.desc_en : e.desc}</div>
+    <div class="sources-section">
+      <div class="label">${L === 'en' ? 'Sources' : '信源'}</div>
+      ${e.sources.map(s => `<a class="source-link" href="${s.u}" target="_blank">${s.n} ↗</a>`).join('')}
+    </div>
+  `;
+  panel.classList.add('show');
+}
+
+// ======================== YEMEN LIST & DETAIL ========================
+function renderYemenList(filter) {
+  const list = document.getElementById('yemen-event-list');
+  const filtered = filter === 'ALL' ? [...yemenEvents] : yemenEvents.filter(e => e.cat === filter);
+  filtered.sort((a, b) => b.date.localeCompare(a.date));
+  const L = currentLang;
+  list.innerHTML = filtered.map(e => {
+    const cn = L === 'en' ? yemenCatNames_en[e.cat] : yemenCatNames[e.cat];
+    return `
+    <div class="iran-event-card" data-id="${e.id}" onclick="showYemenDetail('${e.id}')">
+      <div class="top"><span class="loc">${L === 'en' && e.loc_en ? e.loc_en : e.loc}</span><span class="date">${e.date}</span></div>
+      <span class="type-tag ${e.cat}" style="background:${yemenCatColors[e.cat]}12;color:${yemenCatColors[e.cat]}">${cn}</span>
+      <div class="desc">${L === 'en' && e.target_en ? e.target_en : e.target}</div>
+      ${e.fatalities ? `<div class="casualties">☠ ${e.fatalities}${L === 'en' ? ' killed' : '人死亡'}</div>` : ''}
+    </div>
+  `;}).join('');
+}
+document.querySelectorAll('#yemen-filters .filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('#yemen-filters .filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderYemenList(tab.dataset.filter);
+  });
+});
+function showYemenDetail(id) {
+  const e = yemenEvents.find(x => x.id === id);
+  if (!e) return;
+  const color = yemenCatColors[e.cat];
+  const panel = document.getElementById('detail-panel');
+  const content = document.getElementById('detail-content');
+  const L = currentLang;
+  const cn = L === 'en' ? yemenCatNames_en[e.cat] : yemenCatNames[e.cat];
+  document.querySelectorAll('.iran-event-card').forEach(c => c.classList.remove('active'));
+  const ac = document.querySelector(`.iran-event-card[data-id="${id}"]`);
+  if (ac) ac.classList.add('active');
+  map.flyTo([e.lat, e.lng], 8, { duration: 0.8 });
+  content.innerHTML = `
+    <h2>${L === 'en' && e.loc_en ? e.loc_en : e.loc} <span style="font-size:12px;color:${color}">${cn}</span></h2>
+    <div class="meta-row">
+      <span class="meta-tag">${e.date}</span>
+      <span class="meta-tag">${L === 'en' && e.target_en ? e.target_en : e.target}</span>
+      ${e.fatalities ? `<span class="meta-tag" style="color:#ea580c">☠ ${e.fatalities}${L === 'en' ? ' killed' : '人死亡'}</span>` : ''}
+    </div>
+    <div class="status-full">${L === 'en' && e.desc_en ? e.desc_en : e.desc}</div>
+    <div class="sources-section">
+      <div class="label">${L === 'en' ? 'Sources' : '信源'}</div>
+      ${e.sources.map(s => `<a class="source-link" href="${s.u}" target="_blank">${s.n} ↗</a>`).join('')}
+    </div>
+  `;
+  panel.classList.add('show');
+}
+
+// ======================== MYANMAR LIST & DETAIL ========================
+function renderMyanmarList(filter) {
+  const list = document.getElementById('myanmar-event-list');
+  const filtered = filter === 'ALL' ? [...myanmarEvents] : myanmarEvents.filter(e => e.cat === filter);
+  filtered.sort((a, b) => b.date.localeCompare(a.date));
+  const L = currentLang;
+  list.innerHTML = filtered.map(e => {
+    const cn = L === 'en' ? myanmarCatNames_en[e.cat] : myanmarCatNames[e.cat];
+    return `
+    <div class="iran-event-card" data-id="${e.id}" onclick="showMyanmarDetail('${e.id}')">
+      <div class="top"><span class="loc">${L === 'en' && e.loc_en ? e.loc_en : e.loc}</span><span class="date">${e.date}</span></div>
+      <span class="type-tag ${e.cat}" style="background:${myanmarCatColors[e.cat]}12;color:${myanmarCatColors[e.cat]}">${cn}</span>
+      <div class="desc">${L === 'en' && e.target_en ? e.target_en : e.target}</div>
+      ${e.fatalities ? `<div class="casualties">☠ ${e.fatalities}${L === 'en' ? ' killed' : '人死亡'}</div>` : ''}
+    </div>
+  `;}).join('');
+}
+document.querySelectorAll('#myanmar-filters .filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('#myanmar-filters .filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderMyanmarList(tab.dataset.filter);
+  });
+});
+function showMyanmarDetail(id) {
+  const e = myanmarEvents.find(x => x.id === id);
+  if (!e) return;
+  const color = myanmarCatColors[e.cat];
+  const panel = document.getElementById('detail-panel');
+  const content = document.getElementById('detail-content');
+  document.querySelectorAll('.iran-event-card').forEach(c => c.classList.remove('active'));
+  const ac = document.querySelector(`.iran-event-card[data-id="${id}"]`);
+  if (ac) ac.classList.add('active');
+  map.flyTo([e.lat, e.lng], 8, { duration: 0.8 });
+  const L = currentLang;
+  const cn = L === 'en' ? myanmarCatNames_en[e.cat] : myanmarCatNames[e.cat];
+  content.innerHTML = `
+    <h2>${L === 'en' && e.loc_en ? e.loc_en : e.loc} <span style="font-size:12px;color:${color}">${cn}</span></h2>
+    <div class="meta-row">
+      <span class="meta-tag">${e.date}</span>
+      <span class="meta-tag">${L === 'en' && e.target_en ? e.target_en : e.target}</span>
+      ${e.fatalities ? `<span class="meta-tag" style="color:#ea580c">☠ ${e.fatalities}${L === 'en' ? ' killed' : '人死亡'}</span>` : ''}
+    </div>
+    <div class="status-full">${L === 'en' && e.desc_en ? e.desc_en : e.desc}</div>
+    <div class="sources-section">
+      <div class="label">${L === 'en' ? 'Sources' : '信源'}</div>
+      ${e.sources.map(s => `<a class="source-link" href="${s.u}" target="_blank">${s.n} ↗</a>`).join('')}
+    </div>
+  `;
+  panel.classList.add('show');
+}
+
+// ======================== SYRIA LIST & DETAIL ========================
+function renderSyriaList(filter) {
+  const list = document.getElementById('syria-event-list');
+  const filtered = filter === 'ALL' ? [...syriaEvents] : syriaEvents.filter(e => e.cat === filter);
+  filtered.sort((a, b) => b.date.localeCompare(a.date));
+  const L = currentLang;
+  list.innerHTML = filtered.map(e => {
+    const cn = L === 'en' ? syriaCatNames_en[e.cat] : syriaCatNames[e.cat];
+    return `
+    <div class="iran-event-card" data-id="${e.id}" onclick="showSyriaDetail('${e.id}')">
+      <div class="top"><span class="loc">${L === 'en' && e.loc_en ? e.loc_en : e.loc}</span><span class="date">${e.date}</span></div>
+      <span class="type-tag ${e.cat}" style="background:${syriaCatColors[e.cat]}12;color:${syriaCatColors[e.cat]}">${cn}</span>
+      <div class="desc">${L === 'en' && e.target_en ? e.target_en : e.target}</div>
+      ${e.fatalities ? `<div class="casualties">☠ ${e.fatalities}${L === 'en' ? ' killed' : '人死亡'}</div>` : ''}
+    </div>
+  `;}).join('');
+}
+document.querySelectorAll('#syria-filters .filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('#syria-filters .filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderSyriaList(tab.dataset.filter);
+  });
+});
+function showSyriaDetail(id) {
+  const e = syriaEvents.find(x => x.id === id);
+  if (!e) return;
+  const color = syriaCatColors[e.cat];
+  const panel = document.getElementById('detail-panel');
+  const content = document.getElementById('detail-content');
+  const L = currentLang;
+  const cn = L === 'en' ? syriaCatNames_en[e.cat] : syriaCatNames[e.cat];
+  document.querySelectorAll('.iran-event-card').forEach(c => c.classList.remove('active'));
+  const ac = document.querySelector(`.iran-event-card[data-id="${id}"]`);
+  if (ac) ac.classList.add('active');
+  map.flyTo([e.lat, e.lng], 8, { duration: 0.8 });
+  content.innerHTML = `
+    <h2>${L === 'en' && e.loc_en ? e.loc_en : e.loc} <span style="font-size:12px;color:${color}">${cn}</span></h2>
+    <div class="meta-row">
+      <span class="meta-tag">${e.date}</span>
+      <span class="meta-tag">${L === 'en' && e.target_en ? e.target_en : e.target}</span>
+      ${e.fatalities ? `<span class="meta-tag" style="color:#ea580c">☠ ${e.fatalities}${L === 'en' ? ' killed' : '人死亡'}</span>` : ''}
+    </div>
+    <div class="status-full">${L === 'en' && e.desc_en ? e.desc_en : e.desc}</div>
+    <div class="sources-section">
+      <div class="label">${L === 'en' ? 'Sources' : '信源'}</div>
+      ${e.sources.map(s => `<a class="source-link" href="${s.u}" target="_blank">${s.n} ↗</a>`).join('')}
+    </div>
+  `;
+  panel.classList.add('show');
+}
+
+// ======================== DRC LIST & DETAIL ========================
+function renderDrcList(filter) {
+  const list = document.getElementById('drc-event-list');
+  const filtered = filter === 'ALL' ? [...drcEvents] : drcEvents.filter(e => e.cat === filter);
+  filtered.sort((a, b) => b.date.localeCompare(a.date));
+  const L = currentLang;
+  list.innerHTML = filtered.map(e => {
+    const cn = L === 'en' ? drcCatNames_en[e.cat] : drcCatNames[e.cat];
+    return `
+    <div class="iran-event-card" data-id="${e.id}" onclick="showDrcDetail('${e.id}')">
+      <div class="top"><span class="loc">${L === 'en' && e.loc_en ? e.loc_en : e.loc}</span><span class="date">${e.date}</span></div>
+      <span class="type-tag ${e.cat}" style="background:${drcCatColors[e.cat]}12;color:${drcCatColors[e.cat]}">${cn}</span>
+      <div class="desc">${L === 'en' && e.target_en ? e.target_en : e.target}</div>
+      ${e.fatalities ? `<div class="casualties">☠ ${e.fatalities}${L === 'en' ? ' killed' : '人死亡'}</div>` : ''}
+    </div>
+  `;}).join('');
+}
+document.querySelectorAll('#drc-filters .filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('#drc-filters .filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderDrcList(tab.dataset.filter);
+  });
+});
+function showDrcDetail(id) {
+  const e = drcEvents.find(x => x.id === id);
+  if (!e) return;
+  const color = drcCatColors[e.cat];
+  const panel = document.getElementById('detail-panel');
+  const content = document.getElementById('detail-content');
+  const L = currentLang;
+  const cn = L === 'en' ? drcCatNames_en[e.cat] : drcCatNames[e.cat];
+  document.querySelectorAll('.iran-event-card').forEach(c => c.classList.remove('active'));
+  const ac = document.querySelector(`.iran-event-card[data-id="${id}"]`);
+  if (ac) ac.classList.add('active');
+  map.flyTo([e.lat, e.lng], 9, { duration: 0.8 });
+  content.innerHTML = `
+    <h2>${L === 'en' && e.loc_en ? e.loc_en : e.loc} <span style="font-size:12px;color:${color}">${cn}</span></h2>
+    <div class="meta-row">
+      <span class="meta-tag">${e.date}</span>
+      <span class="meta-tag">${L === 'en' && e.target_en ? e.target_en : e.target}</span>
+      ${e.fatalities ? `<span class="meta-tag" style="color:#ea580c">☠ ${e.fatalities}${L === 'en' ? ' killed' : '人死亡'}</span>` : ''}
+    </div>
+    <div class="status-full">${L === 'en' && e.desc_en ? e.desc_en : e.desc}</div>
+    <div class="sources-section">
+      <div class="label">${L === 'en' ? 'Sources' : '信源'}</div>
+      ${e.sources.map(s => `<a class="source-link" href="${s.u}" target="_blank">${s.n} ↗</a>`).join('')}
+    </div>
+  `;
+  panel.classList.add('show');
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('show');
+  document.querySelectorAll('.conflict-item, .iran-event-card').forEach(el => el.classList.remove('active'));
+}
+
+// ======================== OSINT PANEL ========================
+function toggleOsint() {
+  const panel = document.getElementById('osint-panel');
+  if (panel.classList.contains('show')) {
+    panel.classList.remove('show');
+    return;
+  }
+  const src = DATA.osint_sources;
+  const L = currentLang;
+  const sections = [
+    { title: L === 'en' ? 'Conflict Tracking Platforms' : '冲突追踪平台', data: src.conflict_trackers },
+    { title: L === 'en' ? 'Think Tanks & Research' : '智库与研究机构', data: src.think_tanks },
+    { title: L === 'en' ? 'Defense News' : '防务新闻', data: src.news_defense },
+    { title: L === 'en' ? 'Satellite Imagery' : '卫星影像', data: src.satellite_imagery }
+  ];
+  panel.innerHTML = sections.map(s => `
+    <div class="osint-category">
+      <h3>${s.title}</h3>
+      ${s.data.map(item => `
+        <div class="osint-item">
+          <a href="${item.url}" target="_blank">${item.name}</a>
+          <span class="desc">${item.desc.slice(0, 30)}...</span>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+  panel.classList.add('show');
+}
+
+// ======================== SIDEBAR COLLAPSE FUNCTIONALITY ========================
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const btn = document.querySelector('.sidebar-toggle');
+  sidebar.classList.toggle('collapsed');
+  btn.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+  setTimeout(() => map.invalidateSize(), 350);
+}
+
+// ======================== ANALYSIS PANEL DATA & FUNCTIONALITY ========================
+const analysisData = {
+  overview: {
+    title: '全球战略态势总览',
+    title_en: 'Global Strategic Overview',
+    sections: [
+      {
+        title: '🌍 系统性风险评估',
+        title_en: '🌍 Systemic Risk Assessment',
+        items: [
+          { type: 'report', org: 'Eurasia Group', title: 'Top 10 Global Risks 2026: #1 美国政治革命', date: '2026年1月', url: 'https://www.eurasiagroup.net/issues/top-risks-2026', insight: 'Ian Bremmer将<span class="key-point">美国国内制度性崩溃</span>列为2026年全球头号风险，认为Trump对制衡机制的系统性拆解比任何军事冲突都更具全球影响力。这一"内政>外战"的风险排序颠覆了传统地缘政治分析框架。' },
+          { type: 'report', org: 'IISS', title: 'Armed Conflict Survey 2025: 全球暴力持续升级', date: '2025年', url: 'https://www.iiss.org/publications/armed-conflict-survey/2025/armed-conflict-survey-2025/', insight: 'IISS元分析指出：2025年冲突格局的核心特征是<span class="key-point">地缘经济链条串联多线冲突</span>。Trump回归"加剧了大国博弈并进一步削弱了多边主义"，构成冲突升级的系统性驱动力。' },
+          { type: 'report', org: 'ACLED', title: 'Conflict Watchlist 2026: 二战以来最多并发武装冲突', date: '2026年3月', url: 'https://acleddata.com/series/conflict-watchlist-2026', insight: '截至2026年3月，全球面临<span class="key-point">二战以来最多并发武装冲突</span>。ACLED记录204,605起冲突事件（2024.12-2025.11），缅甸以1,200+武装团体成为全球最碎片化冲突。' },
+          { type: 'report', org: 'SIPRI', title: '全球军备流动激增近10%', date: '2026年3月', url: 'https://www.sipri.org/media/press-release/2026/global-arms-flows-jump-nearly-10-cent-european-demand-soars', insight: '乌克兰获得全球武器转让的9.7%（五年前仅0.1%），推动<span class="key-point">美国对欧军售暴增217%</span>。以色列在多线作战中维持4.4%的全球军火出口份额。' }
+        ]
+      },
+      {
+        title: '🧠 顶尖分析师独到观点',
+        title_en: '🧠 Top Analyst Insights',
+        items: [
+          { type: 'analyst', name: 'Ian Bremmer', affiliation: 'Eurasia Group创始人', quote: '中国已掌握"电力技术栈"（电池、电动车、机器人、AI供应链），而美国正在沦为"石油国家"。2026年的核心竞争轴线是技术/经济分化，而非军事对抗。', url: 'https://www.eurasiagroup.net/live-post/risk-2-overpowered' },
+          { type: 'analyst', name: 'George Friedman', affiliation: 'Geopolitical Futures创始人', quote: '伊朗冲突虽占据头条，但中国和俄罗斯的结构性危机（以及欧洲的虚弱）才是真正的驱动力。边缘冲突分散了人们对核心大国权力转移的注意力。', url: 'https://geopoliticalfutures.com/beyond-iran-china-russia-and-europe/' },
+          { type: 'analyst', name: 'Comfort Ero', affiliation: 'ICG主席', quote: '埃塞俄比亚-厄立特里亚紧张局势可能是灾难性的（上次战争造成数万人死亡）。被忽视的区域冲突——具有不对称死亡人数——才是隐藏的地缘政治定时炸弹。', url: 'https://www.crisisgroup.org/visual-explainers/ten-conflicts-2026/' }
+        ]
+      }
+    ]
+  },
+  ukraine: {
+    title: '俄乌战区深度分析',
+    title_en: 'Russia-Ukraine Deep Analysis',
+    sections: [
+      {
+        title: '📋 智库深度报告',
+        title_en: '📋 Think Tank Reports',
+        items: [
+          { type: 'report', org: 'ISW', title: '俄军春夏攻势战术评估', date: '2026年3月21-23日', url: 'https://www.kyivpost.com/post/72388', insight: '俄军机械化突击已从集群纵队转向<span class="key-point">分散多路突击</span>以压制乌军无人机防御。但ISW评估伤亡率（500+人中405人损失）不可持续，表明俄军无法长期维持大规模行动。' },
+          { type: 'report', org: 'Carnegie', title: '好战与困窘：战后俄罗斯', date: '2026年3月', url: 'https://carnegieendowment.org/russia-eurasia/research/2026/03/russia-ukraine-postwar-divided-european-security', insight: '俄罗斯将在战后变得<span class="key-point">更不安全、更怀恨在心</span>，对欧洲的威胁甚于2022年之前。普京将领土征服视为帝国重建的核心，使谈判解决在结构上不可能。' },
+          { type: 'report', org: 'SIPRI', title: '俄罗斯军事预算新洞察', date: '2026年3月', url: 'https://www.sipri.org/news/2026/sipri-publishes-new-insights-russian-military-budget', insight: '俄军费达1490亿美元（较2023年增38%，是2015年两倍），GDP占比7.1%。乌克兰军费647亿美元，<span class="key-point">GDP占比34%为全球最高</span>军事负担。' }
+        ]
+      },
+      {
+        title: '🧠 分析师独到观点',
+        title_en: '🧠 Top Analyst Insights',
+        items: [
+          { type: 'analyst', name: 'Michael Kofman', affiliation: '军事分析专家', quote: '伤亡率已从2024年的750-1000人/天加速至2025-26年的约1500-1600人/天。时间在战略上有利于乌克兰，但近期动态残酷——俄罗斯面临军事耗竭但维持消耗的能力超出共识预期。' },
+          { type: 'analyst', name: 'Fiona Hill', affiliation: '布鲁金斯学会高级研究员', quote: '普京通过心理依赖操纵Trump（"像伴侣关系"），用最少的奉承让美国总统急于讨好。个人心理——而非军事战略——正在驱动美国对俄政策。' }
+        ]
+      }
+    ]
+  },
+  iran: {
+    title: '伊朗战区深度分析',
+    title_en: 'Iran Theater Deep Analysis',
+    sections: [
+      {
+        title: '📋 智库深度报告',
+        title_en: '📋 Think Tank Reports',
+        items: [
+          { type: 'report', org: 'ISW/CTP', title: '美以行动阶段评估：从防空压制到国防工业打击', date: '2026年3月5-13日', url: 'https://www.criticalthreats.org/analysis/iran-update-evening-special-edition-march-7-2026', insight: '行动已进入<span class="key-point">第二阶段：打击国防工业资产</span>。伊朗无人机攻击从332架/天骤降至6架/天，但ISW警告：伊朗通过能源基础设施经济/政治施压的"负担转嫁"策略创造了不对称战略风险。' },
+          { type: 'report', org: 'Brookings', title: '伊朗战争：接下来会怎样？', date: '2026年3月3日', url: 'https://www.brookings.edu/wp-content/uploads/2026/02/fp_20260303_iran_war_transcript.pdf', insight: '行动缺乏明确可实现目标，是一场战略赌博。最初的后哈梅内伊谈判模式（委内瑞拉式）已被级联领导层死亡所否定，<span class="key-point">"政权深嵌的制度网络确保短期权力结构存续"</span>。' }
+        ]
+      },
+      {
+        title: '🧠 分析师独到观点',
+        title_en: '🧠 Top Analyst Insights',
+        items: [
+          { type: 'analyst', name: 'Peter Zeihan', affiliation: '地缘政治分析师', quote: '伊朗经济在结构上极度脆弱：90%国家收入来自石油，90%石油通过单一咽喉要道输出。伊朗"手中无牌"——人口和地理决定论使德黑兰在缺乏俄中实质支持的情况下毫无防御力。' }
+        ]
+      }
+    ]
+  },
+  gaza: {
+    title: '加沙战区深度分析',
+    title_en: 'Gaza Theater Deep Analysis',
+    sections: [
+      {
+        title: '📋 智库深度报告',
+        title_en: '📋 Think Tank Reports',
+        items: [
+          { type: 'report', org: 'ICG', title: '加沙停火至关重要但仅是开始', date: '2026年1月', url: 'https://www.crisisgroup.org/middle-east-north-africa/israelpalestine/b97-gazas-ceasefire-vital-only-start', insight: 'ICG关键洞察：Trump的初始停火未被利用，以色列在3月中旬违反停火又造成10,000巴勒斯坦人死亡。<span class="key-point">"进展的最佳甚至唯一希望在于阿拉伯和其他国家政府向Trump提出统一愿景"</span>。' },
+          { type: 'report', org: 'Carnegie', title: '以色列的永恒战争', date: '2026年3月', url: 'https://carnegieendowment.org/middle-east/diwan/2026/03/dominance-degradation-and-debilitation', insight: '以色列的行动目标是<span class="key-point">对敌对行为者的削弱和碎片化</span>而非行为矫正；此策略维持开放式冲突，需要持续军事压力，没有明确的退出通道。' }
+        ]
+      }
+    ]
+  },
+  sudan: {
+    title: '苏丹战区深度分析',
+    title_en: 'Sudan Theater Deep Analysis',
+    sections: [
+      {
+        title: '📋 智库深度报告',
+        title_en: '📋 Think Tank Reports',
+        items: [
+          { type: 'report', org: 'ICG', title: '2026年十大关注冲突：苏丹事实分裂', date: '2026年1月', url: 'https://www.crisisgroup.org/visual-explainers/ten-conflicts-2026/', insight: 'ICG独特评估：苏丹正走向<span class="key-point">"利比亚式"事实分裂</span>。RSF（UAE支持）控制达尔富尔/科尔多凡，军方控制中部/东部。关键是双方正在建立平行治理结构（RSF的TASIS政府、军方过渡委员会），表明接受分裂为既成事实。' },
+          { type: 'report', org: 'ICG', title: '2026年非洲七大和平与安全优先事项', date: '2026年1月', url: 'https://www.crisisgroup.org/brf/africa/b209-seven-peace-and-security-priorities-africa-2026', insight: 'Comfort Ero指出：多个非洲冲突正在<span class="key-point">同时降低可见度却加剧致死率</span>——萨赫勒军政权未能击败圣战分子、苏丹走向事实分裂、索马里结构性脆弱。' }
+        ]
+      }
+    ]
+  },
+  yemen: {
+    title: '也门战区深度分析',
+    title_en: 'Yemen Theater Deep Analysis',
+    sections: [
+      {
+        title: '📋 智库深度报告',
+        title_en: '📋 Think Tank Reports',
+        items: [
+          { type: 'report', org: 'INSS/ISW', title: '胡塞武装收入危机与不情愿升级', date: '2026年3月', url: 'https://www.inss.org.il/publication/houthi-2026/', insight: '胡塞政权面临港口毁坏、援助下降、制裁和金融机构迁离的<span class="key-point">"完美风暴"收入危机</span>。升级对以/美在经济上变得不理性，可能推动胡塞经济达到公众/民兵叛逃的临界点。' },
+          { type: 'report', org: 'ACLED', title: '也门冲突监测', date: '2026年', url: 'https://acleddata.com/monitor/yemen-conflict-monitor', insight: '胡塞自2025年10月以来<span class="key-point">零次境外行动</span>；对商船攻击从2024年的150次降至2025年的7次。胡塞在伊朗战争期间保持谨慎姿态，正与沙特阿拉伯谈判。' }
+        ]
+      }
+    ]
+  },
+  myanmar: {
+    title: '缅甸战区深度分析',
+    title_en: 'Myanmar Theater Deep Analysis',
+    sections: [
+      {
+        title: '📋 智库深度报告',
+        title_en: '📋 Think Tank Reports',
+        items: [
+          { type: 'report', org: 'ICG', title: '缅甸危险漂流：冲突、选举与区域缓和', date: '2026年', url: 'https://www.crisisgroup.org/brf/asia/south-east-asia/myanmar/b184-myanmars-dangerous-drift-conflict-elections-and-looming-regional-detente', insight: 'ICG关键分析：军政府因<span class="key-point">中国决定性战略支持</span>（军事技术、无人机/反无人机装备、工程停火）而重获上风。2026年虚假选举将安装名义上的文官政府掩盖持续军事控制。' },
+          { type: 'report', org: 'ACLED', title: '缅甸：全球最碎片化冲突', date: '2026年', url: 'https://acleddata.com/series/conflict-watchlist-2026', insight: '缅甸拥有<span class="key-point">1,200+武装团体</span>跨多个邦活动，是全球最碎片化的武装冲突。反抗力量"没有明显的推翻策略"，冲突性质从流动走向僵化的军事威权统治。' }
+        ]
+      }
+    ]
+  },
+  syria: {
+    title: '叙利亚战区深度分析',
+    title_en: 'Syria Theater Deep Analysis',
+    sections: [
+      {
+        title: '📋 智库深度报告',
+        title_en: '📋 Think Tank Reports',
+        items: [
+          { type: 'report', org: 'ICG', title: '叙利亚东北部的平静机遇', date: '2026年1月30日', url: 'https://www.crisisgroup.org/cmt/middle-east-north-africa/syria/opportunity-calm-north-eastern-syria', insight: 'ICG将SDF-大马士革停火定义为<span class="key-point">"历史性突破"</span>：通过分阶段整合模式（军事撤出、国防/内政部整合、联合安全任命）避免冲突，可能成为后冲突国家重建的范式。' },
+          { type: 'report', org: 'ACLED', title: '叙利亚冲突数据：2026年3月', date: '2026年3月', url: 'https://acleddata.com/update/africa-overview-march-2026', insight: '叙利亚记录7,692例冲突死亡。<span class="key-point">德鲁兹-阿拉维派与新政权冲突</span>加剧；以色列在南部地区空袭增加。过渡期的教派裂痕成为新的不稳定因素。' }
+        ]
+      }
+    ]
+  },
+  drc: {
+    title: '刚果战区深度分析',
+    title_en: 'DRC Theater Deep Analysis',
+    sections: [
+      {
+        title: '📋 智库深度报告',
+        title_en: '📋 Think Tank Reports',
+        items: [
+          { type: 'report', org: 'ICG', title: 'M23攻势：大湖地区难以捉摸的和平', date: '2025年12月', url: 'https://www.crisisgroup.org/rpt/africa/democratic-republic-congo-rwanda/320-m23-offensive-elusive-peace-great-lakes', insight: 'ICG揭示独特悖论：<span class="key-point">和平谈判与战斗加剧同时进行</span>而非相互替代。M23和卢旺达在谈判的同时将控制领土扩展到1990年代内战以来最大面积——谈判是领土巩固的外交掩护。' },
+          { type: 'report', org: 'ACLED', title: '刚果冲突数据月报', date: '2026年3月', url: 'https://acleddata.com/update/africa-overview-march-2026', insight: 'M23于12月攻占乌维拉；2月刚果民主共和国记录到<span class="key-point">有史以来最高月度空袭/无人机打击次数</span>。刚果政府军增加对航空作战的依赖；刚果-卢旺达关系濒临破裂。' }
+        ]
+      }
+    ]
+  }
+};
+
+function toggleAnalysis() {
+  const panel = document.getElementById('analysis-panel');
+  const isShowing = panel.classList.toggle('show');
+  if (isShowing) {
+    renderAnalysis(currentView === 'global' ? 'overview' : currentView);
+  }
+  setTimeout(() => map.invalidateSize(), 350);
+}
+
+function renderAnalysis(theater) {
+  const data = analysisData[theater];
+  if (!data) return;
+  const container = document.getElementById('analysis-content');
+
+  // Update header title based on current language
+  const titleKey = `analysis-${theater}-title`;
+  const headerTitle = document.getElementById('analysis-title');
+  if (headerTitle) {
+    const titleText = i18n[titleKey]?.[currentLang] || data.title;
+    headerTitle.innerHTML = '🔍 ' + titleText;
+  }
+
+  let html = '';
+  data.sections.forEach(section => {
+    const sectionTitle = currentLang === 'en' ? section.title_en : section.title;
+    html += `<div class="analysis-section">${sectionTitle}</div>`;
+    section.items.forEach(item => {
+      if (item.type === 'report') {
+        const linkText = currentLang === 'en' ? 'Read Original ↗' : '阅读原文 ↗';
+        html += `
+          <div class="report-card">
+            <div class="report-source"><span class="org-badge">${item.org}</span></div>
+            <div class="report-title">${item.title}</div>
+            <div class="report-date">${item.date}</div>
+            <div class="report-insight">${item.insight}</div>
+            <a class="report-link" href="${item.url}" target="_blank">${linkText}</a>
+          </div>`;
+      } else if (item.type === 'analyst') {
+        const sourceText = currentLang === 'en' ? 'Source ↗' : '来源 ↗';
+        html += `
+          <div class="analyst-card">
+            <div class="analyst-name">${item.name}</div>
+            <div class="analyst-affiliation">${item.affiliation}</div>
+            <div class="analyst-quote">"${item.quote}"</div>
+            ${item.url ? `<a class="report-link" href="${item.url}" target="_blank" style="margin-top:8px">${sourceText}</a>` : ''}
+          </div>`;
+      }
+    });
+  });
+
+  container.innerHTML = html;
+}
+
+// ======================== LANGUAGE TOGGLE ========================
+function toggleLang() {
+  currentLang = currentLang === 'zh' ? 'en' : 'zh';
+  document.getElementById('lang-label').textContent = currentLang === 'zh' ? 'EN' : '中';
+  applyLang();
+}
+
+function applyLang() {
+  const L = currentLang;
+  const t = (key) => i18n[key]?.[L] || key;
+
+  // === PAGE TITLE ===
+  document.title = t('site-title');
+  const headerTitle = document.querySelector('.header-left h1');
+  if (headerTitle) headerTitle.textContent = t('site-title');
+
+  // === VIEW TOGGLE BUTTONS ===
+  const viewBtns = document.querySelectorAll('.view-btn');
+  const viewKeys = ['view-global','view-ukraine','view-iran','view-gaza','view-sudan','view-yemen','view-myanmar','view-syria','view-drc'];
+  viewBtns.forEach((btn, i) => { if (viewKeys[i]) btn.textContent = t(viewKeys[i]); });
+
+  // === GLOBAL SIDEBAR ===
+  // Stat labels
+  const globalStatLabels = [
+    ['#global-sidebar .stat-chip.total .label', 'stat-total'],
+    ['#global-sidebar .stat-chip.critical .label', 'stat-critical'],
+    ['#global-sidebar .stat-chip.high .label', 'stat-high'],
+    ['#global-sidebar .stat-chip.medium .label', 'stat-medium'],
+  ];
+  globalStatLabels.forEach(([sel, key]) => {
+    const el = document.querySelector(sel);
+    if (el) el.textContent = t(key);
+  });
+
+  // Global filter tabs
+  const globalFilterTexts = { ALL: ['全部','All'], CRITICAL: ['极危','Critical'], HIGH: ['高危','High'], MEDIUM: ['中危','Medium'] };
+  document.querySelectorAll('#global-filters .filter-tab').forEach(tab => {
+    const f = tab.dataset.filter;
+    if (globalFilterTexts[f]) tab.textContent = L === 'en' ? globalFilterTexts[f][1] : globalFilterTexts[f][0];
+  });
+
+  // === UKRAINE SIDEBAR ===
+  const uaStatMap = { 'n-ru-strike': ['俄军打击','RU Strikes'], 'n-ua-strike': ['乌军反击','UA Strikes'], 'n-ground': ['地面战斗','Ground'], 'n-ua-gain': ['领土收复','Territory'] };
+  Object.entries(uaStatMap).forEach(([id, texts]) => {
+    const numEl = document.getElementById(id);
+    if (numEl) { const label = numEl.closest('.stat-chip')?.querySelector('.label'); if (label) label.textContent = L === 'en' ? texts[1] : texts[0]; }
+  });
+  const uaFilterTexts = { ALL: ['全部事件','All Events'], ru_strike: ['俄军打击','RU Strikes'], ua_strike: ['乌军反击','UA Strikes'], ground: ['地面战斗','Ground'], territory: ['领土变动','Territory'] };
+  document.querySelectorAll('#ukraine-filters .filter-tab').forEach(tab => {
+    const f = tab.dataset.filter;
+    if (uaFilterTexts[f]) tab.textContent = L === 'en' ? uaFilterTexts[f][1] : uaFilterTexts[f][0];
+  });
+
+  // === IRAN SIDEBAR ===
+  const irStatMap = { 'n-us': ['美国打击','US Strikes'], 'n-il': ['以色列打击','Israel Strikes'], 'n-ir': ['伊朗反击','Iran Response'], 'n-cas': ['死亡人数','Casualties'] };
+  Object.entries(irStatMap).forEach(([id, texts]) => {
+    const numEl = document.getElementById(id);
+    if (numEl) { const label = numEl.closest('.stat-chip')?.querySelector('.label'); if (label) label.textContent = L === 'en' ? texts[1] : texts[0]; }
+  });
+  const irFilterTexts = { ALL: ['全部事件','All Events'], airstrike: ['空袭','Airstrikes'], missile: ['导弹','Missiles'], naval: ['海上行动','Naval Ops'], nuclear: ['核设施','Nuclear'], civilian: ['平民伤亡','Civilian'] };
+  document.querySelectorAll('#iran-filters .filter-tab').forEach(tab => {
+    const f = tab.dataset.filter;
+    if (irFilterTexts[f]) tab.textContent = L === 'en' ? irFilterTexts[f][1] : irFilterTexts[f][0];
+  });
+
+  // === GAZA SIDEBAR ===
+  const gzStatMap = { 'n-airstrike-gz': ['空袭','Airstrikes'], 'n-ground-op-gz': ['地面行动','Ground Ops'], 'n-ceasefire-gz': ['停火谈判','Ceasefire'], 'n-humanitarian-gz': ['人道危机','Humanitarian'] };
+  Object.entries(gzStatMap).forEach(([id, texts]) => {
+    const numEl = document.getElementById(id);
+    if (numEl) { const label = numEl.closest('.stat-chip')?.querySelector('.label'); if (label) label.textContent = L === 'en' ? texts[1] : texts[0]; }
+  });
+  const gzFilterTexts = { ALL: ['全部事件','All Events'], airstrike: ['空袭','Airstrikes'], ground_op: ['地面行动','Ground Ops'], ceasefire: ['停火/谈判','Ceasefire'], humanitarian: ['人道危机','Humanitarian'], escalation: ['区域升级','Escalation'] };
+  document.querySelectorAll('#gaza-filters .filter-tab').forEach(tab => {
+    const f = tab.dataset.filter;
+    if (gzFilterTexts[f]) tab.textContent = L === 'en' ? gzFilterTexts[f][1] : gzFilterTexts[f][0];
+  });
+
+  // === SUDAN SIDEBAR ===
+  const sdStatMap = { 'n-saf-advance': ['SAF推进','SAF Advance'], 'n-rsf-attack': ['RSF进攻','RSF Attack'], 'n-civilian-sd': ['平民伤亡','Civilian'], 'n-humanitarian-sd': ['人道危机','Humanitarian'] };
+  Object.entries(sdStatMap).forEach(([id, texts]) => {
+    const numEl = document.getElementById(id);
+    if (numEl) { const label = numEl.closest('.stat-chip')?.querySelector('.label'); if (label) label.textContent = L === 'en' ? texts[1] : texts[0]; }
+  });
+  const sdFilterTexts = { ALL: ['全部事件','All Events'], saf_advance: ['SAF推进','SAF Advance'], rsf_attack: ['RSF进攻','RSF Attack'], civilian: ['平民伤亡','Civilian'], humanitarian: ['人道危机','Humanitarian'], foreign: ['外部干预','Foreign'] };
+  document.querySelectorAll('#sudan-filters .filter-tab').forEach(tab => {
+    const f = tab.dataset.filter;
+    if (sdFilterTexts[f]) tab.textContent = L === 'en' ? sdFilterTexts[f][1] : sdFilterTexts[f][0];
+  });
+
+  // === YEMEN SIDEBAR ===
+  const yeStatMap = { 'n-houthi-attack': ['胡塞攻击','Houthi Attacks'], 'n-us-strike': ['美军打击','US Strikes'], 'n-shipping': ['红海航运','Red Sea'], 'n-ground-ye': ['地面冲突','Ground'] };
+  Object.entries(yeStatMap).forEach(([id, texts]) => {
+    const numEl = document.getElementById(id);
+    if (numEl) { const label = numEl.closest('.stat-chip')?.querySelector('.label'); if (label) label.textContent = L === 'en' ? texts[1] : texts[0]; }
+  });
+  const yeFilterTexts = { ALL: ['全部事件','All Events'], houthi_attack: ['胡塞攻击','Houthi Attacks'], us_strike: ['美军打击','US Strikes'], shipping: ['红海航运','Red Sea'], ground: ['地面冲突','Ground'], humanitarian: ['人道危机','Humanitarian'] };
+  document.querySelectorAll('#yemen-filters .filter-tab').forEach(tab => {
+    const f = tab.dataset.filter;
+    if (yeFilterTexts[f]) tab.textContent = L === 'en' ? yeFilterTexts[f][1] : yeFilterTexts[f][0];
+  });
+
+  // === MYANMAR SIDEBAR ===
+  const mmStatMap = { 'n-resistance': ['抵抗军','Resistance'], 'n-junta-strike': ['军政府空袭','Junta Strikes'], 'n-battle': ['城镇争夺','Battles'], 'n-ethnic': ['民族武装','Ethnic Armed'] };
+  Object.entries(mmStatMap).forEach(([id, texts]) => {
+    const numEl = document.getElementById(id);
+    if (numEl) { const label = numEl.closest('.stat-chip')?.querySelector('.label'); if (label) label.textContent = L === 'en' ? texts[1] : texts[0]; }
+  });
+  const mmFilterTexts = { ALL: ['全部事件','All Events'], resistance: ['抵抗军','Resistance'], junta_strike: ['军政府空袭','Junta Strikes'], battle: ['城镇争夺','Battles'], ethnic: ['民族武装','Ethnic Armed'], civilian: ['平民伤亡','Civilian'] };
+  document.querySelectorAll('#myanmar-filters .filter-tab').forEach(tab => {
+    const f = tab.dataset.filter;
+    if (mmFilterTexts[f]) tab.textContent = L === 'en' ? mmFilterTexts[f][1] : mmFilterTexts[f][0];
+  });
+
+  // === SYRIA SIDEBAR ===
+  const syStatMap = { 'n-transition': ['政权过渡','Transition'], 'n-israel-strike': ['以色列空袭','Israel Strikes'], 'n-turkey-op': ['土耳其行动','Turkey Ops'], 'n-sdf': ['库尔德SDF','Kurdish SDF'] };
+  Object.entries(syStatMap).forEach(([id, texts]) => {
+    const numEl = document.getElementById(id);
+    if (numEl) { const label = numEl.closest('.stat-chip')?.querySelector('.label'); if (label) label.textContent = L === 'en' ? texts[1] : texts[0]; }
+  });
+  const syFilterTexts = { ALL: ['全部事件','All Events'], transition: ['政权过渡','Transition'], israel_strike: ['以色列空袭','Israel Strikes'], turkey_op: ['土耳其行动','Turkey Ops'], sdf: ['库尔德SDF','Kurdish SDF'], isis: ['ISIS残余','ISIS Remnants'] };
+  document.querySelectorAll('#syria-filters .filter-tab').forEach(tab => {
+    const f = tab.dataset.filter;
+    if (syFilterTexts[f]) tab.textContent = L === 'en' ? syFilterTexts[f][1] : syFilterTexts[f][0];
+  });
+
+  // === DRC SIDEBAR ===
+  const drcStatMap = { 'n-m23-advance': ['M23推进','M23 Advance'], 'n-drc-defense': ['刚果军防御','DRC Defense'], 'n-civilian-drc': ['平民伤亡','Civilian'], 'n-foreign': ['外部干预','Foreign'] };
+  Object.entries(drcStatMap).forEach(([id, texts]) => {
+    const numEl = document.getElementById(id);
+    if (numEl) { const label = numEl.closest('.stat-chip')?.querySelector('.label'); if (label) label.textContent = L === 'en' ? texts[1] : texts[0]; }
+  });
+  const drcFilterTexts = { ALL: ['全部事件','All Events'], m23_advance: ['M23推进','M23 Advance'], drc_defense: ['刚果军防御','DRC Defense'], civilian: ['平民伤亡','Civilian'], foreign: ['外部干预','Foreign'], humanitarian: ['人道危机','Humanitarian'] };
+  document.querySelectorAll('#drc-filters .filter-tab').forEach(tab => {
+    const f = tab.dataset.filter;
+    if (drcFilterTexts[f]) tab.textContent = L === 'en' ? drcFilterTexts[f][1] : drcFilterTexts[f][0];
+  });
+
+  // === OSINT BUTTON ===
+  const osintBtn = document.getElementById('osint-toggle');
+  if (osintBtn) osintBtn.textContent = L === 'en' ? '📡 OSINT Source Directory' : '📡 OSINT 信源目录';
+
+  // === ANALYSIS PANEL ===
+  const subtitle = document.getElementById('analysis-subtitle');
+  if (subtitle) subtitle.textContent = t('analysis-subtitle');
+
+  const toggleLabel = document.getElementById('analysis-toggle-label');
+  if (toggleLabel) toggleLabel.textContent = t('analysis-toggle-label');
+
+  // === RE-RENDER DYNAMIC CONTENT ===
+  if (currentView === 'global') {
+    const activeFilter = document.querySelector('#global-filters .filter-tab.active')?.dataset.filter || 'ALL';
+    renderGlobalList(activeFilter);
+  } else {
+    const renderFn = { ukraine: renderUkraineList, iran: renderIranList, gaza: renderGazaList, sudan: renderSudanList, yemen: renderYemenList, myanmar: renderMyanmarList, syria: renderSyriaList, drc: renderDrcList }[currentView];
+    if (renderFn) {
+      const activeFilter = document.querySelector(`#${currentView}-filters .filter-tab.active`)?.dataset.filter || 'ALL';
+      renderFn(activeFilter);
+    }
+  }
+
+  // Re-render analysis panel if open
+  if (document.getElementById('analysis-panel').classList.contains('show')) {
+    renderAnalysis(currentView === 'global' ? 'overview' : currentView);
+  }
+
+  // Close detail panel on lang switch (content is stale)
+  closeDetail();
+}
+
+// Theater detail views accessed via button in global detail panel
+</script>
+</body>
+</html>
