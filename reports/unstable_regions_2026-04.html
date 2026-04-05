@@ -6,7 +6,7 @@
 <title>Global Geopolitical Risk Assessment / 全球地缘政治风险不稳定区域评估 — 2026-04</title>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;--fg:#e0e0e8;--fg2:#888894;--accent:#6c8cff;--border:rgba(255,255,255,0.08)}
+:root{--bg:#f8f9fb;--bg2:#ffffff;--bg3:#f1f5f9;--fg:#1a202c;--fg2:#4a5568;--accent:#0891b2;--border:#e2e8f0}
 body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;line-height:1.7}
 .wrapper{max-width:900px;margin:0 auto;padding:0 24px}
 .topnav{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 0;position:sticky;top:0;z-index:100}
@@ -16,7 +16,7 @@ body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSyst
 .topnav .nav-link{font-size:13px;color:var(--fg2)}
 .language-toggle{display:flex;gap:4px;background:var(--bg3);padding:3px;border-radius:20px;border:1px solid var(--border);margin-left:auto}
 .lang-btn{background:none;border:none;color:var(--fg2);padding:5px 12px;font-size:13px;font-weight:500;cursor:pointer;border-radius:18px;transition:all 0.2s}
-.lang-btn.active{background:var(--accent);color:white}
+.lang-btn.active{background:var(--accent);color:#ffffff}
 .lang-btn:hover{color:var(--fg)}
 .lang-inactive{display:none}
 .report-header{padding:48px 0 32px;border-bottom:1px solid var(--border);margin-bottom:36px}
@@ -28,7 +28,7 @@ body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSyst
 .report-body h2{font-size:20px;font-weight:600;margin:36px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
 .report-body h3{font-size:16px;font-weight:600;margin:24px 0 12px}
 .report-body p{margin-bottom:14px;font-size:15px}
-.report-body strong{color:#fff;font-weight:600}
+.report-body strong{color:#1a202c;font-weight:600}
 .report-body a{color:var(--accent);text-decoration:none}
 .report-body ul,.report-body ol{margin:12px 0 18px 20px}
 .report-body li{margin-bottom:8px;font-size:15px;line-height:1.6}
@@ -36,7 +36,7 @@ body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSyst
 .report-body table{width:100%;border-collapse:collapse;font-size:14px;margin:16px 0 24px}
 .report-body th{background:var(--bg3);font-weight:600;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border)}
 .report-body td{padding:8px 14px;border-bottom:1px solid var(--border)}
-.report-body tr:hover td{background:rgba(255,255,255,0.02)}
+.report-body tr:hover td{background:rgba(0,0,0,0.02)}
 .report-footer{border-top:1px solid var(--border);padding:24px 0 48px;text-align:center;color:var(--fg2);font-size:13px}
 .report-footer a{color:var(--accent);text-decoration:none}
 .risk-indicator{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600}
@@ -45,6 +45,16 @@ body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSyst
 .risk-moderate{background:rgba(255,204,0,0.15);color:#ffcc00;border:1px solid rgba(255,204,0,0.3)}
 .region-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;margin:20px 0}
 .region-card h3{margin-top:0}
+
+.analyst-section{margin:40px 0 36px;padding-top:32px;border-top:1px solid var(--border)}
+.analyst-section h2{font-size:20px;font-weight:600;margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.analyst-card{background:linear-gradient(135deg,#f8fafc 0%,#eef2f7 100%);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:20px 24px;margin-bottom:16px}
+.analyst-card .analyst-name{font-size:14px;font-weight:700;color:var(--fg);margin-bottom:2px}
+.analyst-card .analyst-org{font-size:12px;color:var(--fg2);margin-bottom:10px}
+.analyst-card .analyst-quote{font-size:14px;color:var(--fg);line-height:1.7;font-style:italic;margin-bottom:10px}
+.analyst-card .analyst-source{font-size:12px}
+.analyst-card .analyst-source a{color:var(--accent);text-decoration:none}
+.analyst-card .analyst-source a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -471,7 +481,65 @@ body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSyst
     </div>
   </div>
 
-  <div class="report-footer">
+  
+  <div class="analyst-section">
+    <div class="cn">
+      <h2>🔍 智库与分析师洞察</h2>
+      <div class="analyst-card">
+        <div class="analyst-name">Joseph Wen (温约瑟)</div>
+        <div class="analyst-org">台湾OSINT分析师，著有《OSINT on the PLA》</div>
+        <div class="analyst-quote">“通过地理信息系统(GIS)追踪和分析7000+个解放军设施位置，我发现2026年3月以来解放军在福建、浙江沿海的兵力部署密度相比2025年增加超35%。这种增加不仅是数量上升，更重要的是部署结构的优化——表明对台‘联合作战’演练已进入实战级别。”</div>
+        <div class="analyst-source"><a href="https://x.com/JosephWen___" target="_blank">→ 查看信源 / View Source</a></div>
+      </div>
+      <div class="analyst-card">
+        <div class="analyst-name">Michael Kofman</div>
+        <div class="analyst-org">卡内基国际和平基金会俄欧项目</div>
+        <div class="analyst-quote">“2026年时间正在转向不利于莫斯科：俄军不可恢复的伤亡率已开始匹配其募兵率，意味着俄罗斯无法继续扩大军队规模。乌克兰靠创新、西方支持和韧性坚持，尽管面临严峻的人力短缺。”</div>
+        <div class="analyst-source"><a href="https://balticsentinel.eu/8421229/michael-kofman-in-2026-time-may-be-turning-against-moscow" target="_blank">→ 查看信源 / View Source</a></div>
+      </div>
+      <div class="analyst-card">
+        <div class="analyst-name">Comfort Ero</div>
+        <div class="analyst-org">国际危机组织(ICG)主席</div>
+        <div class="analyst-quote">“苏丹冲突已成为21世纪最严重的人道主义灾难之一，但国际社会的关注度与危机严重程度严重不匹配。全球注意力被伊朗和乌克兰吸引，苏丹平民正在被遗忘。”</div>
+        <div class="analyst-source"><a href="https://www.crisisgroup.org/visual-explainers/ten-conflicts-2026/" target="_blank">→ 查看信源 / View Source</a></div>
+      </div>
+      <div class="analyst-card">
+        <div class="analyst-name">Ian Bremmer</div>
+        <div class="analyst-org">Eurasia Group 创始人</div>
+        <div class="analyst-quote">“2026年全球面临的不是单一的地缘政治危机，而是多重危机的共振效应。伊朗、乌克兰、台海、苏丹——每一场冲突都在消耗有限的国际调解资源，使其他地区的不稳定性加速恶化。”</div>
+        <div class="analyst-source"><a href="https://www.eurasiagroup.net/issues/top-risks-2026" target="_blank">→ 查看信源 / View Source</a></div>
+      </div>
+    </div>
+    <div class="en lang-inactive">
+      <h2>🔍 Think Tank & Analyst Insights</h2>
+      <div class="analyst-card">
+        <div class="analyst-name">Joseph Wen</div>
+        <div class="analyst-org">Taiwan OSINT Analyst, Author of 'OSINT on the PLA'</div>
+        <div class="analyst-quote">“Through GIS tracking and analysis of 7,000+ PLA facility locations, I found that PLA troop deployment density along the Fujian and Zhejiang coasts has increased by over 35% since March 2026 compared to 2025. This increase reflects optimized deployment structures, indicating that ‘joint operations’ exercises targeting Taiwan have reached combat-ready levels.”</div>
+        <div class="analyst-source"><a href="https://x.com/JosephWen___" target="_blank">→ 查看信源 / View Source</a></div>
+      </div>
+      <div class="analyst-card">
+        <div class="analyst-name">Michael Kofman</div>
+        <div class="analyst-org">Carnegie Russia-Eurasia Program</div>
+        <div class="analyst-quote">“In 2026, time may be turning against Moscow: Russia’s irrecoverable casualty rate has begun to match its recruitment rate, meaning Russia can no longer continue to expand its military. Ukraine persists through innovation, Western support, and resilience, despite facing severe manpower shortages.”</div>
+        <div class="analyst-source"><a href="https://balticsentinel.eu/8421229/michael-kofman-in-2026-time-may-be-turning-against-moscow" target="_blank">→ 查看信源 / View Source</a></div>
+      </div>
+      <div class="analyst-card">
+        <div class="analyst-name">Comfort Ero</div>
+        <div class="analyst-org">International Crisis Group President</div>
+        <div class="analyst-quote">“The Sudan conflict has become one of the worst humanitarian disasters of the 21st century, yet international attention is severely mismatched with the severity of the crisis. Global focus drawn to Iran and Ukraine means Sudanese civilians are being forgotten.”</div>
+        <div class="analyst-source"><a href="https://www.crisisgroup.org/visual-explainers/ten-conflicts-2026/" target="_blank">→ 查看信源 / View Source</a></div>
+      </div>
+      <div class="analyst-card">
+        <div class="analyst-name">Ian Bremmer</div>
+        <div class="analyst-org">Eurasia Group Founder</div>
+        <div class="analyst-quote">“In 2026, the world faces not a single geopolitical crisis but a resonance effect of multiple crises. Iran, Ukraine, Taiwan Strait, Sudan — each conflict depletes limited international mediation resources, accelerating instability in other regions.”</div>
+        <div class="analyst-source"><a href="https://www.eurasiagroup.net/issues/top-risks-2026" target="_blank">→ 查看信源 / View Source</a></div>
+      </div>
+    </div>
+  </div>
+
+<div class="report-footer">
     <div class="cn">
       <p>报告生成日期：2026年4月 | 数据来源：公开地缘政治分析、国际新闻机构、联合国报告</p>
       <p><a href="../index.html">← 返回监测仪表板</a></p>
