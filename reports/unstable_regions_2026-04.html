@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Geopolitical Risk Assessment / 全球地缘政治风险不稳定区域评估 — 2026-04</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;--fg:#e0e0e8;--fg2:#888894;--accent:#6c8cff;--border:rgba(255,255,255,0.08)}
+body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;line-height:1.7}
+.wrapper{max-width:900px;margin:0 auto;padding:0 24px}
+.topnav{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 0;position:sticky;top:0;z-index:100}
+.topnav .wrapper{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.topnav a{font-size:14px;color:var(--accent);text-decoration:none}
+.topnav .sep{color:var(--fg2);font-size:12px}
+.topnav .nav-link{font-size:13px;color:var(--fg2)}
+.language-toggle{display:flex;gap:4px;background:var(--bg3);padding:3px;border-radius:20px;border:1px solid var(--border);margin-left:auto}
+.lang-btn{background:none;border:none;color:var(--fg2);padding:5px 12px;font-size:13px;font-weight:500;cursor:pointer;border-radius:18px;transition:all 0.2s}
+.lang-btn.active{background:var(--accent);color:white}
+.lang-btn:hover{color:var(--fg)}
+.lang-inactive{display:none}
+.report-header{padding:48px 0 32px;border-bottom:1px solid var(--border);margin-bottom:36px}
+.report-header .emoji{font-size:48px;margin-bottom:16px}
+.report-header h1{font-size:28px;font-weight:700;letter-spacing:-0.02em;margin-bottom:12px;line-height:1.3}
+.report-header .meta{display:flex;gap:20px;flex-wrap:wrap;font-size:14px;color:var(--fg2)}
+.report-header .badge{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:12px}
+.report-body{padding-bottom:80px}
+.report-body h2{font-size:20px;font-weight:600;margin:36px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.report-body h3{font-size:16px;font-weight:600;margin:24px 0 12px}
+.report-body p{margin-bottom:14px;font-size:15px}
+.report-body strong{color:#fff;font-weight:600}
+.report-body a{color:var(--accent);text-decoration:none}
+.report-body ul,.report-body ol{margin:12px 0 18px 20px}
+.report-body li{margin-bottom:8px;font-size:15px;line-height:1.6}
+.report-body code{background:var(--bg3);padding:2px 6px;border-radius:4px;font-size:13px}
+.report-body table{width:100%;border-collapse:collapse;font-size:14px;margin:16px 0 24px}
+.report-body th{background:var(--bg3);font-weight:600;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border)}
+.report-body td{padding:8px 14px;border-bottom:1px solid var(--border)}
+.report-body tr:hover td{background:rgba(255,255,255,0.02)}
+.report-footer{border-top:1px solid var(--border);padding:24px 0 48px;text-align:center;color:var(--fg2);font-size:13px}
+.report-footer a{color:var(--accent);text-decoration:none}
+.risk-indicator{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600}
+.risk-critical{background:rgba(255,59,48,0.15);color:#ff3b30;border:1px solid rgba(255,59,48,0.3)}
+.risk-high{background:rgba(255,149,0,0.15);color:#ff9500;border:1px solid rgba(255,149,0,0.3)}
+.risk-moderate{background:rgba(255,204,0,0.15);color:#ffcc00;border:1px solid rgba(255,204,0,0.3)}
+.region-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;margin:20px 0}
+.region-card h3{margin-top:0}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <div class="wrapper">
+    <a href="../index.html">📊 Dashboard</a>
+    <span class="sep">/</span>
+    <a href="index.html" class="nav-link">报告存档 / Report Archive</a>
+    <div class="language-toggle">
+      <button class="lang-btn active" data-lang="cn">中文</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+    </div>
+  </div>
+</nav>
+
+<div class="wrapper">
+  <div class="report-header">
+    <div class="emoji">🌍</div>
+    <div class="cn">
+      <h1>全球地缘政治风险监测 — 不稳定区域评估</h1>
+      <div class="meta">
+        <span>报告日期：2026年4月</span>
+        <span class="badge">5个高风险区域</span>
+      </div>
+    </div>
+    <div class="en lang-inactive">
+      <h1>Global Geopolitical Risk Assessment — Unstable Regions Report</h1>
+      <div class="meta">
+        <span>Report Date: April 2026</span>
+        <span class="badge">5 High-Risk Regions</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="report-body">
+    <!-- SECTION 1: 全球风险概览 / Global Overview -->
+    <div class="cn">
+      <h2>📋 全球风险概览</h2>
+      <p>根据最新地缘政治分析，全球正处于二战以来并发冲突最密集的时期。当前形势的关键特征包括：</p>
+      <ul>
+        <li><strong>并发冲突规模：</strong>全球范围内同时进行的主要地缘政治冲突达到历史高位，涉及多个战略要地</li>
+        <li><strong>地缘经济对抗：</strong>经济制裁、技术脱钩、供应链重组已成为国际竞争的首要风险因素</li>
+        <li><strong>战略资源争夺：</strong>关键矿产、能源、芯片等战略物资的控制权成为大国博弈的焦点</li>
+        <li><strong>核风险升温：</strong>核国家在地区冲突中的参与度提高，相关风险级别上升</li>
+        <li><strong>人道主义危机：</strong>多个区域的冲突导致大规模难民流动和人道主义灾难</li>
+      </ul>
+      <p style="color: var(--fg2); margin-top: 20px; font-size: 14px;">本报告重点分析五个关键不稳定区域，评估各地区风险等级、冲突驱动因素，并提供趋势研判。</p>
+    </div>
+    <div class="en lang-inactive">
+      <h2>📋 Global Risk Overview</h2>
+      <p>According to the latest geopolitical analysis, the world is experiencing the densest period of concurrent conflicts since World War II. Key characteristics of the current situation include:</p>
+      <ul>
+        <li><strong>Scale of Concurrent Conflicts:</strong> Multiple major geopolitical conflicts occurring simultaneously across the globe have reached historical levels</li>
+        <li><strong>Geoeconomic Confrontation:</strong> Economic sanctions, technological decoupling, and supply chain restructuring have become the primary risk factors in international competition</li>
+        <li><strong>Strategic Resource Competition:</strong> Control of critical minerals, energy, and semiconductor technology has become the focus of great power competition</li>
+        <li><strong>Rising Nuclear Risk:</strong> Increased involvement of nuclear states in regional conflicts, with elevated risk levels</li>
+        <li><strong>Humanitarian Crisis:</strong> Conflicts in multiple regions are causing large-scale refugee flows and humanitarian disasters</li>
+      </ul>
+      <p style="color: var(--fg2); margin-top: 20px; font-size: 14px;">This report analyzes five key unstable regions, assesses risk levels and conflict drivers in each area, and provides strategic outlook assessments.</p>
+    </div>
+
+    <!-- SECTION 2: 台海与南海 / Taiwan Strait & South China Sea -->
+    <div class="region-card cn">
+      <h2>🇹🇼 台海与南海 <span class="risk-indicator risk-critical">极高风险</span></h2>
+      <h3>核心风险指标</h3>
+      <p>台湾海峡和南中国海地区已成为全球最具紧张局势的战略要地。</p>
+
+      <h3>台湾海峡军事活动</h3>
+      <ul>
+        <li><strong>2025年12月创纪录突破：</strong>单日超过100架中国军机进行跨海峡活动，其中90架越过海峡中线，27枚火箭由福建地区发射</li>
+        <li><strong>2026年3月持续压力：</strong>检测到26架人民解放军军机活动，表明常态化军事演习保持高频</li>
+        <li><strong>军事意图分析：</strong>大规模、频繁的军事演习意在提升对台湾的军事压力、测试防御体系，并向国际社会展示军事实力</li>
+      </ul>
+
+      <h3>南中国海冲突升级</h3>
+      <ul>
+        <li><strong>近距离对峙：</strong>2026年菲律宾"贝尼特斯"号补给舰与中国船只发生近距离碰撞事件，险些引发军事冲突</li>
+        <li><strong>岛礁扩建：</strong>中国在羚羊礁进行大规模填海造陆，新增陆地面积约1,490英亩，引发周边国家强烈抗议</li>
+        <li><strong>菲律宾武装回应：</strong>美国在菲律宾部署500余次军事演习，包括"台风"导弹系统部署，形成对华军事包围</li>
+      </ul>
+
+      <h3>经济与战略意义</h3>
+      <ul>
+        <li><strong>全球贸易枢纽：</strong>年均5万亿美元的国际贸易流量经过台湾海峡和南中国海，任何军事冲突都将对全球经济造成灾难性影响</li>
+        <li><strong>芯片产业链：</strong>台湾半导体产业占全球产能60%以上，台海局势直接影响全球科技供应链稳定性</li>
+        <li><strong>能源通道：</strong>中东石油和天然气的重要运输通道，涉及亚太地区能源安全</li>
+      </ul>
+    </div>
+
+    <div class="region-card en lang-inactive">
+      <h2>🇹🇼 Taiwan Strait & South China Sea <span class="risk-indicator risk-critical">CRITICAL RISK</span></h2>
+      <h3>Core Risk Indicators</h3>
+      <p>The Taiwan Strait and South China Sea region has become the most strategically tense area in the world.</p>
+
+      <h3>Taiwan Strait Military Activity</h3>
+      <ul>
+        <li><strong>Record-Breaking December 2025:</strong> Over 100 Chinese military aircraft conducted cross-strait activities in a single day, with 90 crossing the median line and 27 rockets launched from Fujian</li>
+        <li><strong>Continued Pressure in March 2026:</strong> 26 PLA aircraft detected, indicating normalized military exercises at high frequency</li>
+        <li><strong>Military Intent Analysis:</strong> Large-scale, frequent military exercises aim to increase military pressure on Taiwan, test defense systems, and demonstrate military capability to the international community</li>
+      </ul>
+
+      <h3>South China Sea Conflict Escalation</h3>
+      <ul>
+        <li><strong>Close-Range Standoff:</strong> In 2026, the Philippine BRP Benguet resupply vessel came close to collision with Chinese vessels, nearly triggering military conflict</li>
+        <li><strong>Island Reclamation:</strong> China conducted massive land reclamation at Antelope Reef, creating approximately 1,490 acres of new land, sparking strong protests from neighboring countries</li>
+        <li><strong>Philippine Armed Response:</strong> The U.S. deployed over 500 military exercises in the Philippines, including deployment of Typhon missile systems, forming a military encirclement against China</li>
+      </ul>
+
+      <h3>Economic and Strategic Significance</h3>
+      <ul>
+        <li><strong>Global Trade Hub:</strong> An annual trade volume of approximately $5 trillion passes through the Taiwan Strait and South China Sea; any military conflict would have catastrophic global economic impacts</li>
+        <li><strong>Semiconductor Industry Chain:</strong> Taiwan's semiconductor industry accounts for over 60% of global production capacity; the Taiwan Strait situation directly affects global technology supply chain stability</li>
+        <li><strong>Energy Corridor:</strong> Key shipping lane for Middle Eastern oil and natural gas, affecting Asia-Pacific energy security</li>
+      </ul>
+    </div>
+
+    <!-- SECTION 3: 俄乌战争 / Russia-Ukraine War -->
+    <div class="region-card cn">
+      <h2>🇺🇦 俄乌战争 <span class="risk-indicator risk-high">高风险</span></h2>
+      <h3>冲突现状与进展</h3>
+      <p>俄乌战争进入第四个年头，已成为冷战后最大规模的欧洲陆地战争。</p>
+
+      <h3>军事态势分析</h3>
+      <ul>
+        <li><strong>乌克兰反攻势头：</strong>2026年2月，乌克兰收复领土面积超过同期失地，显示反攻能力有所改善</li>
+        <li><strong>俄军进攻速度放缓：</strong>俄军日均推进速度从5.7平方英里/天下降至4.1平方英里/天，表明攻势动力减弱</li>
+        <li><strong>消耗战模式：</strong>战争已演变为高强度消耗战，双方的人员和物资损耗持续攀升</li>
+      </ul>
+
+      <h3>人员伤亡与人道主义灾难</h3>
+      <ul>
+        <li><strong>俄军伤亡：</strong>约100万俄军人员伤亡（包括阵亡、负伤和失踪）</li>
+        <li><strong>乌克兰伤亡：</strong>估计25-30万人伤亡，包括平民和军人</li>
+        <li><strong>难民危机：</strong>超过600万乌克兰人流离失所，成为欧洲最大规模难民潮</li>
+        <li><strong>能源破坏：</strong>乌克兰三分之二的能源基础设施被摧毁，冬季供暖和电力缺乏威胁民众生命</li>
+      </ul>
+
+      <h3>和平谈判前景</h3>
+      <ul>
+        <li><strong>美国调停努力：</strong>特朗普政府与泽连斯基团队在和平方案上达成90-95%的协议，表明谈判进展显著</li>
+        <li><strong>核心分歧：</strong>乌克兰领土完整、北约东扩、战争赔偿等问题仍存在争议</li>
+        <li><strong>国际关注：</strong>欧盟、英国等西方国家表示支持和平协议，但对乌克兰主权让步表示关切</li>
+      </ul>
+    </div>
+
+    <div class="region-card en lang-inactive">
+      <h2>🇺🇦 Russia-Ukraine War <span class="risk-indicator risk-high">HIGH RISK</span></h2>
+      <h3>Conflict Status and Progress</h3>
+      <p>The Russia-Ukraine war has entered its fourth year and has become the largest-scale European land war since the Cold War.</p>
+
+      <h3>Military Situation Analysis</h3>
+      <ul>
+        <li><strong>Ukrainian Counteroffensive Momentum:</strong> In February 2026, Ukraine recaptured more territory than it lost in the same period, showing improved counteroffensive capability</li>
+        <li><strong>Slowing Russian Offensive:</strong> Russian daily advance rate decreased from 5.7 square miles/day to 4.1 square miles/day, indicating weakening offensive momentum</li>
+        <li><strong>War of Attrition Mode:</strong> The conflict has evolved into a high-intensity war of attrition with both sides experiencing mounting personnel and material losses</li>
+      </ul>
+
+      <h3>Casualties and Humanitarian Disaster</h3>
+      <ul>
+        <li><strong>Russian Casualties:</strong> Approximately 1 million Russian military personnel casualties (including killed, wounded, and missing)</li>
+        <li><strong>Ukrainian Casualties:</strong> Estimated 250,000-300,000 casualties, including both civilians and military personnel</li>
+        <li><strong>Refugee Crisis:</strong> Over 6 million Ukrainians displaced, creating Europe's largest refugee crisis</li>
+        <li><strong>Energy Infrastructure Destruction:</strong> Two-thirds of Ukraine's energy infrastructure destroyed, threatening civilians with inadequate heating and electricity during winters</li>
+      </ul>
+
+      <h3>Peace Negotiation Prospects</h3>
+      <ul>
+        <li><strong>U.S. Mediation Efforts:</strong> The Trump administration and Zelensky's team have reached 90-95% agreement on a peace proposal, indicating significant negotiation progress</li>
+        <li><strong>Core Disagreements:</strong> Questions regarding Ukrainian territorial integrity, NATO expansion, and war reparations remain contentious</li>
+        <li><strong>International Support:</strong> The EU, UK, and other Western countries support peace agreements but express concerns about territorial concessions by Ukraine</li>
+      </ul>
+    </div>
+
+    <!-- SECTION 4: 朝鲜半岛 / Korean Peninsula -->
+    <div class="region-card cn">
+      <h2>🇰🇵 朝鲜半岛 <span class="risk-indicator risk-high">中高风险</span></h2>
+      <h3>核武与导弹进展</h3>
+      <p>朝鲜加快核武与导弹开发步伐，国际社会要求其弃核的呼声日益失效。</p>
+
+      <h3>2026年军事活动</h3>
+      <ul>
+        <li><strong>3月14日导弹测试：</strong>朝鲜进行弹道导弹测试，为年内第三次导弹试验，显示其持续推进武器开发计划</li>
+        <li><strong>频繁的测试周期：</strong>短期内密集进行多次导弹试验，意在完善导弹技术、提升威慑力</li>
+        <li><strong>国际警告被忽视：</strong>联合国安理会制裁效力有限，朝鲜无视国际警告继续军事扩张</li>
+      </ul>
+
+      <h3>区域经济与外交</h3>
+      <ul>
+        <li><strong>中朝贸易增长：</strong>中国与朝鲜的贸易额上升22%，表明中国经济支持力度加大</li>
+        <li><strong>运输联系恢复：</strong>中朝边境的运输、物流联系得到恢复和加强，便于资源互通</li>
+        <li><strong>地缘政治重新洗牌：</strong>朝鲜与中国关系升温，美国与朝鲜之间仍无有效外交渠道</li>
+      </ul>
+
+      <h3>朝鲜2026-2030军事规划</h3>
+      <ul>
+        <li><strong>海基核威慑：</strong>加快研发潜射弹道导弹（SLBM），建立海基核威慑能力</li>
+        <li><strong>AI与无人系统：</strong>整合人工智能技术到军事系统中，开发无人作战平台</li>
+        <li><strong>多样化核武库：</strong>开发多种核弹头和运载工具，提升生存能力和可靠性</li>
+      </ul>
+    </div>
+
+    <div class="region-card en lang-inactive">
+      <h2>🇰🇵 Korean Peninsula <span class="risk-indicator risk-high">MODERATE-HIGH RISK</span></h2>
+      <h3>Nuclear Weapons and Missile Development</h3>
+      <p>North Korea is accelerating the pace of nuclear and missile development; international calls for denuclearization are increasingly ineffective.</p>
+
+      <h3>Military Activities in 2026</h3>
+      <ul>
+        <li><strong>March 14 Missile Test:</strong> North Korea conducted a ballistic missile test, its third missile test of the year, demonstrating continued commitment to weapons development</li>
+        <li><strong>Frequent Testing Cycle:</strong> Multiple missile tests conducted in rapid succession, aimed at perfecting missile technology and enhancing deterrence</li>
+        <li><strong>International Warnings Ignored:</strong> UN Security Council sanctions have limited effectiveness; North Korea disregards international warnings and continues military expansion</li>
+      </ul>
+
+      <h3>Regional Economy and Diplomacy</h3>
+      <ul>
+        <li><strong>China-North Korea Trade Growth:</strong> Bilateral trade increased 22%, indicating increased Chinese economic support</li>
+        <li><strong>Transportation Links Resumed:</strong> Cross-border transportation and logistics between China and North Korea have been restored and strengthened</li>
+        <li><strong>Geopolitical Realignment:</strong> North Korea-China relations warming, while no effective diplomatic channel exists between the U.S. and North Korea</li>
+      </ul>
+
+      <h3>North Korea's 2026-2030 Military Plan</h3>
+      <ul>
+        <li><strong>Sea-Based Nuclear Deterrent:</strong> Accelerate development of submarine-launched ballistic missiles (SLBMs) to establish sea-based nuclear deterrence</li>
+        <li><strong>AI and Unmanned Systems:</strong> Integrate artificial intelligence into military systems; develop unmanned combat platforms</li>
+        <li><strong>Diversified Nuclear Arsenal:</strong> Develop multiple warhead types and delivery systems to enhance survivability and reliability</li>
+      </ul>
+    </div>
+
+    <!-- SECTION 5: 苏丹与非洲之角 / Sudan & Horn of Africa -->
+    <div class="region-card cn">
+      <h2>🇸🇩 苏丹与非洲之角 <span class="risk-indicator risk-critical">极高风险</span></h2>
+      <h3>苏丹内战现状</h3>
+      <p>苏丹正经历自2023年以来最严重的人道主义危机，冲突双方为武装部队(SAF)与快速支援部队(RSF)。</p>
+
+      <h3>冲突规模与伤亡</h3>
+      <ul>
+        <li><strong>战争时间跨度：</strong>自2023年4月爆发至今，已持续三年，成为全球最长的进行中冲突</li>
+        <li><strong>死亡人数估计：</strong>官方数据显示超过40万人死亡，实际数字可能更高（估计可达50万）</li>
+        <li><strong>流离失所规模：</strong>约880万人被迫离开家园成为国内难民，是全球最大规模国内流离失所</li>
+        <li><strong>跨国难民：</strong>超过400万苏丹难民逃往邻国（埃及、乍得、南苏丹等），加重周边国家负担</li>
+      </ul>
+
+      <h3>人道主义灾难</h3>
+      <ul>
+        <li><strong>饥荒危机：</strong>苏丹总人口约3,350万，其中约3,370万人（占总人口约三分之二）需要人道主义援助</li>
+        <li><strong>医疗崩溃：</strong>大部分医院被摧毁或关闭，疾病大规模传播，特别是霍乱、疟疾等传染病</li>
+        <li><strong>儿童危机：</strong>数百万儿童面临营养不良、失学和暴力威胁</li>
+        <li><strong>性暴力激增：</strong>冲突导致针对妇女和儿童的性暴力大幅增加</li>
+      </ul>
+
+      <h3>区域蔓延风险</h3>
+      <ul>
+        <li><strong>乍得东部边界关闭：</strong>2026年2月乍得政府关闭与苏丹的东部边界，防止难民大规模涌入，显示冲突对周边地区的严重威胁</li>
+        <li><strong>埃及难民承压：</strong>埃及已接纳超过50万苏丹难民，国内资源严重不足</li>
+        <li><strong>地区不稳定扩散：</strong>冲突可能蔓延至非洲之角的埃塞俄比亚、索马里等地，导致区域大动荡</li>
+      </ul>
+    </div>
+
+    <div class="region-card en lang-inactive">
+      <h2>🇸🇩 Sudan & Horn of Africa <span class="risk-indicator risk-critical">CRITICAL RISK</span></h2>
+      <h3>Sudan Civil War Status</h3>
+      <p>Sudan is experiencing the worst humanitarian crisis since 2023, with conflict between the Sudanese Armed Forces (SAF) and the Rapid Support Forces (RSF).</p>
+
+      <h3>Scale of Conflict and Casualties</h3>
+      <ul>
+        <li><strong>Duration of War:</strong> Since its outbreak in April 2023, the conflict has lasted three years, becoming the world's longest ongoing conflict</li>
+        <li><strong>Death Toll Estimates:</strong> Official data shows over 400,000 deaths; actual figures may be higher (estimated up to 500,000)</li>
+        <li><strong>Internal Displacement:</strong> Approximately 8.8 million people forced to flee their homes, becoming the world's largest internally displaced population</li>
+        <li><strong>Cross-Border Refugees:</strong> Over 4 million Sudanese refugees have fled to neighboring countries (Egypt, Chad, South Sudan, etc.), burdening regional nations</li>
+      </ul>
+
+      <h3>Humanitarian Disaster</h3>
+      <ul>
+        <li><strong>Famine Crisis:</strong> With Sudan's total population of approximately 33.5 million, an estimated 33.7 million people (about two-thirds of the population) require humanitarian aid</li>
+        <li><strong>Healthcare Collapse:</strong> Most hospitals destroyed or closed; widespread disease transmission, particularly cholera, malaria, and other infectious diseases</li>
+        <li><strong>Child Crisis:</strong> Millions of children facing malnutrition, loss of education, and threat of violence</li>
+        <li><strong>Surge in Sexual Violence:</strong> Conflict has caused dramatic increase in sexual violence against women and children</li>
+      </ul>
+
+      <h3>Risk of Regional Spillover</h3>
+      <ul>
+        <li><strong>Chad Closes Eastern Border:</strong> In February 2026, Chad closed its eastern border with Sudan to prevent mass refugee influx, indicating serious threats to neighboring regions</li>
+        <li><strong>Egypt Under Pressure:</strong> Egypt has accepted over 500,000 Sudanese refugees with severely inadequate domestic resources</li>
+        <li><strong>Regional Instability Spread:</strong> Conflict may spread to Ethiopia, Somalia, and other Horn of Africa countries, causing major regional upheaval</li>
+      </ul>
+    </div>
+
+    <!-- SECTION 6: 趋势研判 / Outlook & Assessment -->
+    <div class="cn">
+      <h2>🔮 趋势研判与战略评估</h2>
+
+      <h3>短期展望（2026年下半年）</h3>
+      <ul>
+        <li><strong>台海紧张持续：</strong>中美战略竞争加剧，军事对峙常态化；台湾地位争议不会短期消解</li>
+        <li><strong>乌克兰和平谈判：</strong>美国调停下可能达成临时停火协议，但长期和平解决困难重重</li>
+        <li><strong>朝核僵局延续：</strong>弃核谈判无实质进展，朝鲜将继续加强核武库建设</li>
+        <li><strong>苏丹人道危机恶化：</strong>冲突无和平迹象，人道主义灾难将继续扩大</li>
+      </ul>
+
+      <h3>中期风险（2026-2027年）</h3>
+      <ul>
+        <li><strong>多地冲突叠加：</strong>若干区域冲突同步升级，可能引发全球战争风险</li>
+        <li><strong>经济制裁升级：</strong>西方国家将扩大对俄罗斯、朝鲜、伊朗等的经济制裁，进一步分割全球经济体系</li>
+        <li><strong>难民潮扩大：</strong>苏丹、乌克兰、缅甸等地难民将继续涌向邻近地区</li>
+        <li><strong>气候与冲突交织：</strong>气候变化加剧资源竞争，进一步激化地缘政治冲突</li>
+      </ul>
+
+      <h3>战略应对建议</h3>
+      <ul>
+        <li><strong>多边外交深化：</strong>加强联合国、区域组织作用，推动冲突地区对话与调解</li>
+        <li><strong>人道主义救援：</strong>加大国际人道主义援助力度，特别是对苏丹、乌克兰的支持</li>
+        <li><strong>经济韧性建设：</strong>企业与国家需构建更具韧性的供应链，减少对单一地区的依赖</li>
+        <li><strong>监视与预警：</strong>持续监测各地区冲突进展，建立应急预案，防止冲突意外升级</li>
+      </ul>
+    </div>
+
+    <div class="en lang-inactive">
+      <h2>🔮 Outlook & Strategic Assessment</h2>
+
+      <h3>Short-Term Outlook (Second Half of 2026)</h3>
+      <ul>
+        <li><strong>Continued Taiwan Strait Tensions:</strong> Intensified U.S.-China strategic competition with normalized military confrontation; Taiwan's status dispute will not be resolved in the short term</li>
+        <li><strong>Ukraine Peace Negotiations:</strong> Temporary ceasefire agreement possible under U.S. mediation, but long-term peaceful resolution faces significant obstacles</li>
+        <li><strong>North Korea Nuclear Stalemate:</strong> No substantive progress in denuclearization talks; North Korea will continue strengthening its nuclear arsenal</li>
+        <li><strong>Sudan Humanitarian Crisis Deterioration:</strong> With no peace prospects, humanitarian disaster will continue to expand</li>
+      </ul>
+
+      <h3>Medium-Term Risk (2026-2027)</h3>
+      <ul>
+        <li><strong>Overlapping Regional Conflicts:</strong> Simultaneous escalation of conflicts in multiple regions could trigger global war risks</li>
+        <li><strong>Economic Sanctions Escalation:</strong> Western countries will expand sanctions against Russia, North Korea, Iran, further fragmenting the global economic system</li>
+        <li><strong>Refugee Crisis Expansion:</strong> Refugees from Sudan, Ukraine, Myanmar, and elsewhere will continue flowing into neighboring regions</li>
+        <li><strong>Climate and Conflict Intertwined:</strong> Climate change intensifies resource competition, further exacerbating geopolitical conflicts</li>
+      </ul>
+
+      <h3>Strategic Response Recommendations</h3>
+      <ul>
+        <li><strong>Strengthen Multilateral Diplomacy:</strong> Enhance the role of the United Nations and regional organizations in promoting dialogue and mediation in conflict zones</li>
+        <li><strong>Humanitarian Assistance:</strong> Increase international humanitarian aid, particularly support for Sudan and Ukraine</li>
+        <li><strong>Build Economic Resilience:</strong> Corporations and nations need to construct more resilient supply chains, reducing dependence on single regions</li>
+        <li><strong>Monitoring and Early Warning:</strong> Continuously monitor conflict developments in various regions, establish contingency plans, and prevent unexpected conflict escalation</li>
+      </ul>
+    </div>
+
+    <!-- 附录数据表 / Data Table Appendix -->
+    <div class="cn">
+      <h2>📊 关键数据汇总</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>地区 / Region</th>
+            <th>风险等级 / Risk Level</th>
+            <th>关键指标 / Key Indicator</th>
+            <th>主要威胁 / Primary Threat</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>台海与南海</td>
+            <td><span class="risk-indicator risk-critical">极高</span></td>
+            <td>100+ PLA aircraft (Dec 2025)</td>
+            <td>军事冲突、贸易中断</td>
+          </tr>
+          <tr>
+            <td>俄乌战争</td>
+            <td><span class="risk-indicator risk-high">高</span></td>
+            <td>1M Russian casualties</td>
+            <td>长期消耗战、难民危机</td>
+          </tr>
+          <tr>
+            <td>朝鲜半岛</td>
+            <td><span class="risk-indicator risk-high">中高</span></td>
+            <td>3rd missile test (2026)</td>
+            <td>核威慑升级、对话僵局</td>
+          </tr>
+          <tr>
+            <td>苏丹与非洲之角</td>
+            <td><span class="risk-indicator risk-critical">极高</span></td>
+            <td>8.8M internally displaced</td>
+            <td>人道主义灾难、地区蔓延</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="en lang-inactive">
+      <h2>📊 Key Data Summary</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Region</th>
+            <th>Risk Level</th>
+            <th>Key Indicator</th>
+            <th>Primary Threat</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Taiwan Strait & South China Sea</td>
+            <td><span class="risk-indicator risk-critical">CRITICAL</span></td>
+            <td>100+ PLA aircraft (Dec 2025)</td>
+            <td>Military conflict, trade disruption</td>
+          </tr>
+          <tr>
+            <td>Russia-Ukraine War</td>
+            <td><span class="risk-indicator risk-high">HIGH</span></td>
+            <td>1M Russian casualties</td>
+            <td>Prolonged attrition, refugee crisis</td>
+          </tr>
+          <tr>
+            <td>Korean Peninsula</td>
+            <td><span class="risk-indicator risk-high">MODERATE-HIGH</span></td>
+            <td>3rd missile test (2026)</td>
+            <td>Nuclear escalation, dialogue stalemate</td>
+          </tr>
+          <tr>
+            <td>Sudan & Horn of Africa</td>
+            <td><span class="risk-indicator risk-critical">CRITICAL</span></td>
+            <td>8.8M internally displaced</td>
+            <td>Humanitarian disaster, regional spillover</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="report-footer">
+    <div class="cn">
+      <p>报告生成日期：2026年4月 | 数据来源：公开地缘政治分析、国际新闻机构、联合国报告</p>
+      <p><a href="../index.html">← 返回监测仪表板</a></p>
+    </div>
+    <div class="en lang-inactive">
+      <p>Report Generated: April 2026 | Data Sources: Open Geopolitical Analysis, International News Agencies, UN Reports</p>
+      <p><a href="../index.html">← Return to Monitoring Dashboard</a></p>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.lang-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const lang=btn.dataset.lang;
+    document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.cn,.en').forEach(el=>{
+      if((lang==='cn'&&el.classList.contains('cn'))||(lang==='en'&&el.classList.contains('en'))){
+        el.classList.remove('lang-inactive');
+      }else{
+        el.classList.add('lang-inactive');
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>
